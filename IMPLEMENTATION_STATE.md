@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P11
+Current prompt: P12
 Current status: Implemented
 Last updated: 2026-07-19
-Next trigger phrase: `START P12 ARTIFACTS`
+Next trigger phrase: `START P13 VERIFICATION`
 
 ---
 
@@ -278,3 +278,29 @@ Next trigger phrase: `START P12 ARTIFACTS`
   - [x] Approval payload is visible in finding card (approvals list on GET /violations/{id})
   - [x] Rejection reason persists (DB row Rejected with reason and decided_at)
 - Next trigger phrase: `START P12 ARTIFACTS`
+
+## P12 — Action artifacts
+
+- Status: Implemented
+- Implemented: five markdown templates mirroring the Finding Card Template (ticket, pr_comment, remediation_dry_run, exception_request, blocked_card), deterministic ArtifactComposer filling templates from evidence (resource context, raw evidence, risk explanation with factors, recommended route, approval state, side effects, source fix from SourceDriftAgent, verification query, before state), route→artifact mapping (source PR route yields PR preview + ticket; dry-run route yields plan; blocked route yields card with per-blocker rule citation and safe alternative), exception artifact requiring owner+justification+compensating control+expiry, action_artifacts table with reversible migration 7a805285e858, POST /api/violations/{id}/artifact enforced through the approval gate (dry-run 403 until Approved; runtime_apply/source_push always 403), GET /api/violations/{id}/artifacts, action state updates (draft ticket_id/remediation_task_id; prUrl never set; blocked card sets status Blocked)
+- Created:
+  - backend/app/agents/artifact_composer.py
+  - backend/app/api/artifacts.py
+  - backend/app/templates/ticket.md
+  - backend/app/templates/pr_comment.md
+  - backend/app/templates/remediation_dry_run.md
+  - backend/app/templates/exception_request.md
+  - backend/app/templates/blocked_card.md
+  - backend/migrations/versions/7a805285e858_action_artifacts_table.py
+  - backend/tests/test_artifact_composer.py
+- Changed: backend/app/db/models.py (ArtifactRow), backend/app/main.py (artifacts router), IMPLEMENTATION_STATE.md, state.json
+- Result: Live verified — POL-001 → pr_comment_preview + ticket (source fix section filled, TEMPORARY warning); POL-002 → ticket; POL-003 → 403 until approval then remediation_dry_run with approvalState Approved and "NO live change" plan; POL-004 → exception_request only with valid expiry (403 without); POL-005 → blocked_card citing "RULES.md 2.7: missing owner blocks auto-action" with safe alternative, card status Blocked. All artifacts isDraft=true; prUrl stays null. ruff, mypy strict (59 files), pytest 117/117 pass.
+- Drawbacks:
+  - No real ServiceNow/Jira/GitHub/Azure calls by design; connectors for real writes arrive only with explicit approval and configuration (P16+)
+  - Artifact bodies are deterministic template output; optional LLM wording polish (allowed by AI rules for drafts) not layered in
+  - Escalation route reuses the blocked_card template (no dedicated escalation template in runbook list)
+- Validation:
+  - [x] Every artifact includes violation ID, evidence, risk explanation, recommended route, approval, side effects, source fix if applicable, verification query (section assertions per artifact)
+  - [x] No real external write happens by default (all drafts; prUrl null; no external connectors invoked)
+  - [x] Blocked path clearly states rule and safe alternative (rule citation + alternative per blocker)
+- Next trigger phrase: `START P13 VERIFICATION`

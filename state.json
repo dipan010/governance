@@ -2,7 +2,7 @@
   "project": "policy-compliance-drift-detection-agent",
   "schemaVersion": "1.0.0",
   "lastUpdatedAt": "2026-07-19T00:00:00+05:30",
-  "currentPromptId": "P11",
+  "currentPromptId": "P12",
   "currentStatus": "Implemented",
   "promptRuns": [
     {
@@ -471,6 +471,50 @@
         "Rejection reason persists"
       ],
       "nextTriggerPhrase": "START P12 ARTIFACTS"
+    },
+    {
+      "promptId": "P12",
+      "status": "Implemented",
+      "startedAt": "2026-07-19T00:00:00+05:30",
+      "finishedAt": "2026-07-19T00:00:00+05:30",
+      "implemented": [
+        "five templates tied to the Finding Card Template",
+        "deterministic ArtifactComposer with source-fix section from SourceDriftAgent",
+        "route-to-artifact mapping incl. PR preview + ticket for source PR route",
+        "exception artifact requiring owner, justification, compensating control, expiry",
+        "action_artifacts table with reversible migration",
+        "artifact API enforced through approval gate; dry-run only after approval",
+        "blocked card with per-blocker rule citation and safe alternative"
+      ],
+      "created": [
+        "backend/app/agents/artifact_composer.py",
+        "backend/app/api/artifacts.py",
+        "backend/app/templates/ticket.md",
+        "backend/app/templates/pr_comment.md",
+        "backend/app/templates/remediation_dry_run.md",
+        "backend/app/templates/exception_request.md",
+        "backend/app/templates/blocked_card.md",
+        "backend/migrations/versions/7a805285e858_action_artifacts_table.py",
+        "backend/tests/test_artifact_composer.py"
+      ],
+      "changed": [
+        "backend/app/db/models.py",
+        "backend/app/main.py",
+        "IMPLEMENTATION_STATE.md",
+        "state.json"
+      ],
+      "result": "All five fixture artifacts generated as specced (live verified); dry-run gated behind approval; everything is a draft with no external writes; 117/117 tests pass",
+      "drawbacks": [
+        "No real ticketing/GitHub/Azure calls by design until approved configuration (P16+)",
+        "Deterministic template output; optional LLM polish not layered",
+        "Escalation reuses blocked_card template"
+      ],
+      "validation": [
+        "Every artifact includes required finding-card sections",
+        "No real external write by default",
+        "Blocked path states rule and safe alternative"
+      ],
+      "nextTriggerPhrase": "START P13 VERIFICATION"
     }
   ]
 }

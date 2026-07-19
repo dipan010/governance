@@ -52,6 +52,22 @@ class ApprovalRow(Base):
     )
 
 
+class ArtifactRow(Base):
+    __tablename__ = "action_artifacts"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    violation_id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("violations.violation_id"), index=True
+    )
+    kind: Mapped[str] = mapped_column(String(32), index=True)
+    title: Mapped[str] = mapped_column(String(512))
+    body: Mapped[str] = mapped_column(String(65536))
+    requires_approval: Mapped[bool] = mapped_column()
+    approval_state: Mapped[str] = mapped_column(String(16))
+    is_draft: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
 class ViolationRow(Base):
     __tablename__ = "violations"
 
