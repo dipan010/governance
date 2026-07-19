@@ -1,0 +1,125 @@
+{
+  "source": "azure_policy_insights_fixture",
+  "subscriptionName": "ABI TECHOPS CLOUD ENGG",
+  "resourceGroup": "ghq-3-squad3-cloudgov-dev-rg",
+  "exportedAt": "2026-07-18T10:30:00+00:00",
+  "findings": [
+    {
+      "findingRef": "POL-001",
+      "policyId": "storage-public-network-disabled",
+      "policyName": "Storage accounts should restrict public network access",
+      "assignmentId": "cloud-governance-baseline",
+      "initiative": "Azure Security Benchmark",
+      "effect": "Audit",
+      "complianceState": "NonCompliant",
+      "failureReason": "publicNetworkAccess is Enabled",
+      "evaluatedAt": "2026-07-18T10:00:00+00:00",
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.Storage/storageAccounts/stpayprod01",
+      "resourceType": "Microsoft.Storage/storageAccounts",
+      "severity": "High",
+      "regulatoryControl": "Network Security",
+      "properties": {
+        "publicNetworkAccess": "Enabled",
+        "networkAcls": { "defaultAction": "Allow", "ipRules": [], "virtualNetworkRules": [] },
+        "privateEndpointConnections": [],
+        "minimumTlsVersion": "TLS1_2"
+      }
+    },
+    {
+      "findingRef": "POL-002",
+      "policyId": "nsg-restrict-management-ports",
+      "policyName": "Management ports should be closed on network security groups",
+      "assignmentId": "cloud-governance-baseline",
+      "initiative": "Azure Security Benchmark",
+      "effect": "Audit",
+      "complianceState": "NonCompliant",
+      "failureReason": "Inbound rule allow-ssh-inbound permits 0.0.0.0/0 to destination port 22",
+      "evaluatedAt": "2026-07-18T10:05:00+00:00",
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.Network/networkSecurityGroups/nsg-app-prod-01",
+      "resourceType": "Microsoft.Network/networkSecurityGroups",
+      "severity": "Critical",
+      "regulatoryControl": "Network Security",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "allow-ssh-inbound",
+            "direction": "Inbound",
+            "access": "Allow",
+            "protocol": "Tcp",
+            "sourceAddressPrefix": "0.0.0.0/0",
+            "destinationPortRange": "22",
+            "priority": 100,
+            "baselinePriority": 4000
+          }
+        ]
+      }
+    },
+    {
+      "findingRef": "POL-003",
+      "policyId": "keyvault-purge-protection-enabled",
+      "policyName": "Key vaults should have purge protection enabled",
+      "assignmentId": "cloud-governance-baseline",
+      "initiative": "Azure Security Benchmark",
+      "effect": "Audit",
+      "complianceState": "NonCompliant",
+      "failureReason": "enablePurgeProtection is not set",
+      "evaluatedAt": "2026-07-18T10:10:00+00:00",
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.KeyVault/vaults/kv-govdev-01",
+      "resourceType": "Microsoft.KeyVault/vaults",
+      "severity": "Low",
+      "regulatoryControl": "Data Protection",
+      "properties": {
+        "enableSoftDelete": true,
+        "enablePurgeProtection": false,
+        "publicNetworkAccess": "Disabled"
+      }
+    },
+    {
+      "findingRef": "POL-004",
+      "policyId": "postgresql-firewall-restrict-cidr",
+      "policyName": "PostgreSQL servers should not allow broad public IP ranges",
+      "assignmentId": "cloud-governance-baseline",
+      "initiative": "Azure Security Benchmark",
+      "effect": "Audit",
+      "complianceState": "NonCompliant",
+      "failureReason": "Firewall rule allow-all-temp permits 0.0.0.0-255.255.255.255",
+      "evaluatedAt": "2026-07-18T10:15:00+00:00",
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.DBforPostgreSQL/flexibleServers/psql-analytics-dev-01",
+      "resourceType": "Microsoft.DBforPostgreSQL/flexibleServers",
+      "severity": "Medium",
+      "regulatoryControl": "Network Security",
+      "properties": {
+        "firewallRules": [
+          {
+            "name": "allow-all-temp",
+            "startIpAddress": "0.0.0.0",
+            "endIpAddress": "255.255.255.255",
+            "createdBy": "analytics-team",
+            "createdAt": "2026-06-28T14:00:00+00:00"
+          }
+        ]
+      }
+    },
+    {
+      "findingRef": "POL-005",
+      "policyId": "public-ip-network-rule-drift",
+      "policyName": "Public IP addresses must have an owner and approved network rules",
+      "assignmentId": "cloud-governance-baseline",
+      "initiative": "Azure Security Benchmark",
+      "effect": "Audit",
+      "complianceState": "NonCompliant",
+      "failureReason": "Public IP has network rule drift and no owner tag is present",
+      "evaluatedAt": "2026-07-18T10:20:00+00:00",
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.Network/publicIPAddresses/pip-legacy-app-01",
+      "resourceType": "Microsoft.Network/publicIPAddresses",
+      "severity": "Medium",
+      "regulatoryControl": "Asset Management",
+      "properties": {
+        "ipAddress": "203.0.113.42",
+        "publicIPAllocationMethod": "Static",
+        "attachedTo": null,
+        "tags": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "source": "verification_fixture",
+  "collectedAt": "2026-07-18T10:30:00+00:00",
+  "states": [
+    {
+      "findingRef": "POL-001",
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.Storage/storageAccounts/stpayprod01",
+      "verificationQuery": "resources | where id =~ '<resourceId>' | project publicNetworkAccess=properties.publicNetworkAccess, defaultAction=properties.networkAcls.defaultAction",
+      "expectedCompliantValue": "publicNetworkAccess == Disabled and networkAcls.defaultAction == Deny",
+      "beforeState": {
+        "publicNetworkAccess": "Enabled",
+        "networkAcls.defaultAction": "Allow"
+      },
+      "afterState": {
+        "publicNetworkAccess": "Disabled",
+        "networkAcls.defaultAction": "Deny"
+      }
+    },
+    {
+      "findingRef": "POL-002",
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.Network/networkSecurityGroups/nsg-app-prod-01",
+      "verificationQuery": "resources | where id =~ '<resourceId>' | mv-expand rule=properties.securityRules | where rule.properties.access == 'Allow' and rule.properties.sourceAddressPrefix in ('*','0.0.0.0/0','Internet') and rule.properties.destinationPortRange in ('22','3389')",
+      "expectedCompliantValue": "no inbound allow from 0.0.0.0/0 to ports 22 or 3389",
+      "beforeState": {
+        "allow-ssh-inbound.sourceAddressPrefix": "0.0.0.0/0",
+        "allow-ssh-inbound.destinationPortRange": "22"
+      },
+      "afterState": null
+    },
+    {
+      "findingRef": "POL-003",
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.KeyVault/vaults/kv-govdev-01",
+      "verificationQuery": "resources | where id =~ '<resourceId>' | project purgeProtection=properties.enablePurgeProtection",
+      "expectedCompliantValue": "enablePurgeProtection == true",
+      "beforeState": { "enablePurgeProtection": false },
+      "afterState": null
+    },
+    {
+      "findingRef": "POL-004",
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.DBforPostgreSQL/flexibleServers/psql-analytics-dev-01",
+      "verificationQuery": "resources | where id =~ '<resourceId>' | mv-expand rule=properties.firewallRules | where rule.startIpAddress == '0.0.0.0' and rule.endIpAddress == '255.255.255.255'",
+      "expectedCompliantValue": "no firewall rule spanning 0.0.0.0-255.255.255.255",
+      "beforeState": { "allow-all-temp": "0.0.0.0-255.255.255.255" },
+      "afterState": null
+    },
+    {
+      "findingRef": "POL-005",
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.Network/publicIPAddresses/pip-legacy-app-01",
+      "verificationQuery": "resources | where id =~ '<resourceId>' | project tags, ipConfiguration=properties.ipConfiguration",
+      "expectedCompliantValue": "owner tag present and network rules match approved baseline",
+      "beforeState": { "ownerTag": null, "networkRuleDrift": true },
+      "afterState": null
+    }
+  ]
+}

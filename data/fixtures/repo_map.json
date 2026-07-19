@@ -1,0 +1,43 @@
+{
+  "source": "iac_repo_map_fixture",
+  "collectedAt": "2026-07-18T10:30:00+00:00",
+  "mappings": [
+    {
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.Storage/storageAccounts/stpayprod01",
+      "repoUrl": "https://github.com/dipan010/cloudgov-iac",
+      "repoPath": "terraform/storage/payments/storage_account.tf",
+      "module": "payments-storage",
+      "codeOwner": "@payments-platform",
+      "pipeline": "cloudgov-iac-deploy",
+      "sourceConfidence": "High",
+      "properties": {
+        "public_network_access_enabled": {
+          "currentSourceValue": "true",
+          "expectedSourceValue": "false",
+          "runtimeProperty": "publicNetworkAccess"
+        },
+        "network_rules.default_action": {
+          "currentSourceValue": "Allow",
+          "expectedSourceValue": "Deny",
+          "runtimeProperty": "networkAcls.defaultAction"
+        }
+      }
+    },
+    {
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.KeyVault/vaults/kv-govdev-01",
+      "repoUrl": "https://github.com/dipan010/cloudgov-iac",
+      "repoPath": "terraform/keyvault/governance/key_vault.tf",
+      "module": "governance-kv",
+      "codeOwner": "@cloud-governance",
+      "pipeline": "cloudgov-iac-deploy",
+      "sourceConfidence": "High",
+      "properties": {
+        "purge_protection_enabled": {
+          "currentSourceValue": "true",
+          "expectedSourceValue": "true",
+          "runtimeProperty": "enablePurgeProtection"
+        }
+      }
+    }
+  ]
+}

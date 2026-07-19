@@ -2,7 +2,7 @@
   "project": "policy-compliance-drift-detection-agent",
   "schemaVersion": "1.0.0",
   "lastUpdatedAt": "2026-07-19T00:00:00+05:30",
-  "currentPromptId": "P01",
+  "currentPromptId": "P02",
   "currentStatus": "Implemented",
   "promptRuns": [
     {
@@ -64,6 +64,46 @@
         "State files record result and drawbacks"
       ],
       "nextTriggerPhrase": "START P02 SCHEMA AND FIXTURES"
+    },
+    {
+      "promptId": "P02",
+      "status": "Implemented",
+      "startedAt": "2026-07-19T00:00:00+05:30",
+      "finishedAt": "2026-07-19T00:00:00+05:30",
+      "implemented": [
+        "canonical evidence schema with Pydantic v2 and camelCase aliases",
+        "explicit enums for severity, environment, route, status, blocker, approval state, verification result, focused signals",
+        "five demo findings POL-001..POL-005 as raw Azure Policy-shaped fixtures",
+        "resource inventory, owner map, repo map, before/after verification fixtures",
+        "schema validation tests for required fields, enum values, bounds, round-trip, fixture invariants"
+      ],
+      "created": [
+        "backend/app/domain/enums.py",
+        "backend/app/domain/evidence_schema.py",
+        "backend/tests/test_evidence_schema.py",
+        "data/fixtures/policy_findings.json",
+        "data/fixtures/resource_inventory.json",
+        "data/fixtures/owner_map.csv",
+        "data/fixtures/repo_map.json",
+        "data/fixtures/before_after_state.json"
+      ],
+      "changed": [
+        "IMPLEMENTATION_STATE.md",
+        "state.json"
+      ],
+      "result": "16/16 pytest tests pass; all validation checklist items met",
+      "drawbacks": [
+        "Tests run in scratch virtualenv; pinned backend/pyproject.toml arrives in P03",
+        "System python3 is 3.11; Python 3.12 available as python3.12 and must be pinned in P03 tooling"
+      ],
+      "validation": [
+        "All five findings have policyId, resourceId, complianceState, failureReason, evaluatedAt",
+        "POL-005 has missing owner (absent from owner_map.csv)",
+        "POL-001 and POL-003 have repo mappings",
+        "POL-001 has before and after state",
+        "Tests validate required fields and enum values"
+      ],
+      "nextTriggerPhrase": "START P03 BACKEND SCAFFOLD"
     }
   ]
 }

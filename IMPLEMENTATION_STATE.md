@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P01
+Current prompt: P02
 Current status: Implemented
 Last updated: 2026-07-19
-Next trigger phrase: `START P02 SCHEMA AND FIXTURES`
+Next trigger phrase: `START P03 BACKEND SCAFFOLD`
 
 ---
 
@@ -39,3 +39,29 @@ Next trigger phrase: `START P02 SCHEMA AND FIXTURES`
   - [x] Out-of-scope section defers extra agents until backbone is working (section 12)
   - [x] State file records result and drawback (this entry)
 - Next trigger phrase: `START P02 SCHEMA AND FIXTURES`
+
+## P02 — Canonical schema and fixtures
+
+- Status: Implemented
+- Implemented: canonical evidence schema (Pydantic v2, camelCase aliases, schema version 1.0.0), explicit enums for severity/environment/route/status/blocker/approval/verification, five demo findings POL-001..POL-005 with raw Azure Policy-shaped evidence, resource inventory, owner map, repo map, before/after verification states, schema validation tests
+- Created:
+  - backend/app/domain/enums.py
+  - backend/app/domain/evidence_schema.py
+  - backend/tests/test_evidence_schema.py
+  - data/fixtures/policy_findings.json
+  - data/fixtures/resource_inventory.json
+  - data/fixtures/owner_map.csv
+  - data/fixtures/repo_map.json
+  - data/fixtures/before_after_state.json
+- Changed: IMPLEMENTATION_STATE.md, state.json
+- Result: 16/16 pytest tests pass. POL-001 (storage public access, prod, restricted, source drift), POL-002 (NSG 0.0.0.0/0 to port 22), POL-003 (Key Vault purge protection, dry-run candidate), POL-004 (PostgreSQL broad CIDR, exception candidate), POL-005 (public IP, missing owner, blocked candidate).
+- Drawbacks:
+  - Tests were run in a scratch virtualenv (pydantic 2.13, pytest 9.1); backend/pyproject.toml with pinned deps arrives in P03
+  - Environment provides Python 3.12 via python3.12 binary; system default python3 is 3.11 — P03 tooling must pin 3.12
+- Validation:
+  - [x] All five findings have policyId, resourceId, complianceState, failureReason, evaluatedAt
+  - [x] At least one finding has missing owner (POL-005 absent from owner_map.csv)
+  - [x] At least two findings have repo mappings (POL-001 storage, POL-003 key vault)
+  - [x] POL-001 has before and after state (Enabled/Allow → Disabled/Deny)
+  - [x] Tests validate required fields and enum values (16 passed)
+- Next trigger phrase: `START P03 BACKEND SCAFFOLD`

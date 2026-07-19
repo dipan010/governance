@@ -1,0 +1,111 @@
+{
+  "source": "azure_resource_graph_fixture",
+  "collectedAt": "2026-07-18T10:30:00+00:00",
+  "resources": [
+    {
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.Storage/storageAccounts/stpayprod01",
+      "resourceType": "Microsoft.Storage/storageAccounts",
+      "subscriptionId": "ABI TECHOPS CLOUD ENGG",
+      "resourceGroup": "ghq-3-squad3-cloudgov-dev-rg",
+      "location": "eastus",
+      "tags": { "app": "payments", "environment": "prod", "dataclass": "restricted" },
+      "environment": "Production",
+      "productionCriticality": "High",
+      "dataClassification": "Restricted",
+      "internetExposure": true,
+      "identityImpact": false,
+      "dependencyCount": 6,
+      "history": {
+        "firstSeen": "2026-07-01T09:00:00+00:00",
+        "previousFix": "Runtime patch on 2026-07-03 re-enabled by redeploy",
+        "recurrenceCount": 2
+      }
+    },
+    {
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.Network/networkSecurityGroups/nsg-app-prod-01",
+      "resourceType": "Microsoft.Network/networkSecurityGroups",
+      "subscriptionId": "ABI TECHOPS CLOUD ENGG",
+      "resourceGroup": "ghq-3-squad3-cloudgov-dev-rg",
+      "location": "eastus",
+      "tags": { "app": "webfront", "environment": "prod" },
+      "environment": "Production",
+      "productionCriticality": "High",
+      "dataClassification": "Internal",
+      "internetExposure": true,
+      "identityImpact": false,
+      "dependencyCount": 3,
+      "dependencyImpactKnown": false,
+      "history": {
+        "firstSeen": "2026-07-10T08:00:00+00:00",
+        "previousFix": null,
+        "recurrenceCount": 0
+      }
+    },
+    {
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.KeyVault/vaults/kv-govdev-01",
+      "resourceType": "Microsoft.KeyVault/vaults",
+      "subscriptionId": "ABI TECHOPS CLOUD ENGG",
+      "resourceGroup": "ghq-3-squad3-cloudgov-dev-rg",
+      "location": "eastus",
+      "tags": { "app": "cloudgov", "environment": "dev" },
+      "environment": "Development",
+      "productionCriticality": "Low",
+      "dataClassification": "Confidential",
+      "internetExposure": false,
+      "identityImpact": true,
+      "dependencyCount": 1,
+      "remediation": {
+        "remediationSupported": true,
+        "requiredPermission": "Microsoft.KeyVault/vaults/write",
+        "permissionAvailable": true,
+        "restartRisk": "None",
+        "downtimeRisk": "None",
+        "costImpact": "None"
+      },
+      "history": {
+        "firstSeen": "2026-07-15T08:00:00+00:00",
+        "previousFix": null,
+        "recurrenceCount": 0
+      }
+    },
+    {
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.DBforPostgreSQL/flexibleServers/psql-analytics-dev-01",
+      "resourceType": "Microsoft.DBforPostgreSQL/flexibleServers",
+      "subscriptionId": "ABI TECHOPS CLOUD ENGG",
+      "resourceGroup": "ghq-3-squad3-cloudgov-dev-rg",
+      "location": "eastus",
+      "tags": { "app": "analytics", "environment": "dev" },
+      "environment": "Development",
+      "productionCriticality": "Medium",
+      "dataClassification": "Confidential",
+      "internetExposure": true,
+      "identityImpact": false,
+      "dependencyCount": 2,
+      "history": {
+        "firstSeen": "2026-06-28T14:00:00+00:00",
+        "previousFix": null,
+        "recurrenceCount": 1
+      }
+    },
+    {
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.Network/publicIPAddresses/pip-legacy-app-01",
+      "resourceType": "Microsoft.Network/publicIPAddresses",
+      "subscriptionId": "ABI TECHOPS CLOUD ENGG",
+      "resourceGroup": "ghq-3-squad3-cloudgov-dev-rg",
+      "location": "eastus",
+      "tags": {},
+      "environment": "Unknown",
+      "productionCriticality": "Unknown",
+      "dataClassification": "Unknown",
+      "internetExposure": true,
+      "identityImpact": false,
+      "dependencyCount": null,
+      "dependencyImpactKnown": false,
+      "history": {
+        "firstSeen": "2026-05-02T11:00:00+00:00",
+        "previousFix": null,
+        "recurrenceCount": 0
+      }
+    }
+  ]
+}

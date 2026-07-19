@@ -1,0 +1,5 @@
+resourceId,ownerTeam,ownerEmail,supportGroup,businessApp,escalationPath
+/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.Storage/storageAccounts/stpayprod01,Payments Platform,payments-platform@example.com,CloudOps-Payments,Payments,cloudgov-leads@example.com
+/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.Network/networkSecurityGroups/nsg-app-prod-01,Web Frontline,web-frontline@example.com,CloudOps-Network,WebFront,cloudgov-leads@example.com
+/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.KeyVault/vaults/kv-govdev-01,Cloud Governance,cloud-governance@example.com,CloudOps-Platform,CloudGov,cloudgov-leads@example.com
+/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.DBforPostgreSQL/flexibleServers/psql-analytics-dev-01,Analytics Engineering,analytics-eng@example.com,CloudOps-Data,Analytics,cloudgov-leads@example.com
