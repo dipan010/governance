@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P03
+Current prompt: P04
 Current status: Implemented
 Last updated: 2026-07-19
-Next trigger phrase: `START P04 INGEST NORMALIZER`
+Next trigger phrase: `START P05 ENRICHMENT`
 
 ---
 
@@ -95,3 +95,30 @@ Next trigger phrase: `START P04 INGEST NORMALIZER`
   - [x] ruff passes (format + lint)
   - [x] typecheck passes (mypy strict)
 - Next trigger phrase: `START P04 INGEST NORMALIZER`
+
+## P04 — Ingestion and normalization
+
+- Status: Implemented
+- Implemented: Core Policy Compliance Agent (deterministic normalization of policy and Defender records into canonical schema), stable violation IDs (findingRef honored, else deterministic hash of policy+resource+evaluation time with case-insensitive resource identity), missing-evidence flagging (resource identity, policy id, compliance state, failure reason, evaluated at, severity, plus enrichment gaps: owner, repo map, verification query), append-only raw findings store, idempotent violation upsert, ingestion/worklist/detail APIs, Alembic initialized with reversible first migration
+- Created:
+  - backend/app/agents/core_policy_agent.py
+  - backend/app/api/findings.py
+  - backend/app/repositories/violations_repo.py
+  - backend/app/domain/validation.py
+  - backend/tests/conftest.py
+  - backend/tests/test_core_policy_agent.py
+  - backend/tests/test_findings_api.py
+  - backend/alembic.ini, backend/migrations/ (env.py + initial revision 29c2ac0e6597)
+- Changed: backend/app/db/models.py (raw_findings, violations tables), backend/app/main.py (findings router, lifespan create_all for local/test), IMPLEMENTATION_STATE.md, state.json
+- Result: POST /api/ingest/policy ingests all five fixtures (verified live: ingested=5, errors=0); GET /api/violations returns POL-001..POL-005; GET /api/violations/POL-001 returns canonical evidence plus byte-identical raw evidence. Invalid records return structured warnings and are kept, not discarded. Migration upgrade/downgrade/upgrade verified. ruff, mypy strict (26 files), pytest 31/31 pass.
+- Drawbacks:
+  - Ingest endpoints authorize via the local/test role stub; real identity arrives at P16
+  - Worklist has no filters/sorting yet (arrives with scoring P08 and frontend P15)
+  - Owner/repo/verification flags are set for all findings at ingest by design; enrichment (P05) clears the ones it can fill
+- Validation:
+  - [x] Five fixtures ingest successfully (API test + live server run)
+  - [x] Invalid record returns structured error or warning (warning with codes; unparseable body → 422)
+  - [x] Raw evidence is preserved (append-only raw_findings, byte-identical round-trip test)
+  - [x] Normalized object matches canonical schema (round-trip validation test)
+  - [x] State file records files changed and result (this entry)
+- Next trigger phrase: `START P05 ENRICHMENT`

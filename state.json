@@ -2,7 +2,7 @@
   "project": "policy-compliance-drift-detection-agent",
   "schemaVersion": "1.0.0",
   "lastUpdatedAt": "2026-07-19T00:00:00+05:30",
-  "currentPromptId": "P03",
+  "currentPromptId": "P04",
   "currentStatus": "Implemented",
   "promptRuns": [
     {
@@ -151,6 +151,51 @@
         "mypy strict passes"
       ],
       "nextTriggerPhrase": "START P04 INGEST NORMALIZER"
+    },
+    {
+      "promptId": "P04",
+      "status": "Implemented",
+      "startedAt": "2026-07-19T00:00:00+05:30",
+      "finishedAt": "2026-07-19T00:00:00+05:30",
+      "implemented": [
+        "Core Policy Compliance Agent normalizing policy and Defender records deterministically",
+        "stable violation IDs: findingRef honored, else hash of policy, lowercased resource, evaluation time",
+        "missing-evidence flagging including enrichment gaps (owner, repo map, verification query)",
+        "append-only raw findings store and idempotent violation upsert",
+        "POST /api/ingest/policy, POST /api/ingest/defender, GET /api/violations, GET /api/violations/{id}",
+        "Alembic initialized with reversible initial migration for raw_findings and violations"
+      ],
+      "created": [
+        "backend/app/agents/core_policy_agent.py",
+        "backend/app/api/findings.py",
+        "backend/app/repositories/violations_repo.py",
+        "backend/app/domain/validation.py",
+        "backend/tests/conftest.py",
+        "backend/tests/test_core_policy_agent.py",
+        "backend/tests/test_findings_api.py",
+        "backend/alembic.ini",
+        "backend/migrations/"
+      ],
+      "changed": [
+        "backend/app/db/models.py",
+        "backend/app/main.py",
+        "IMPLEMENTATION_STATE.md",
+        "state.json"
+      ],
+      "result": "Five fixtures ingest (live verified); raw evidence preserved byte-identical; invalid records flagged not discarded; migration reversible; ruff/mypy/pytest 31 pass",
+      "drawbacks": [
+        "Ingest auth uses local/test role stub until P16",
+        "Worklist filters/sorting arrive with P08/P15",
+        "Owner/repo/verification gaps flagged at ingest by design; P05 enrichment fills them"
+      ],
+      "validation": [
+        "Five fixtures ingest successfully",
+        "Invalid record returns structured warning; malformed body returns 422",
+        "Raw evidence preserved append-only",
+        "Normalized object round-trips canonical schema",
+        "State files record files changed and result"
+      ],
+      "nextTriggerPhrase": "START P05 ENRICHMENT"
     }
   ]
 }
