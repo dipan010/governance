@@ -1,6 +1,7 @@
 """Ingestion and violations API."""
 
 import uuid
+from functools import lru_cache
 from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -12,10 +13,30 @@ from app.agents.core_policy_agent import (
     normalize_defender_finding,
     normalize_policy_finding,
 )
+from app.agents.enrichment_agent import EnrichmentAgent
+from app.connectors.defender import FixtureDefender
+from app.connectors.owner_map import FixtureOwnerMap
+from app.connectors.repo_map import FixtureRepoMap
+from app.connectors.resource_inventory import FixtureResourceInventory
+from app.connectors.verification_source import FixtureVerificationSource
+from app.core.config import get_settings
 from app.core.security import Role, require_role
 from app.db.session import get_db
 from app.domain.validation import IssueSeverity, ValidationIssue
 from app.repositories.violations_repo import ViolationsRepository
+
+
+@lru_cache
+def get_enrichment_agent() -> EnrichmentAgent:
+    fixtures_dir = get_settings().fixtures_dir
+    return EnrichmentAgent(
+        inventory=FixtureResourceInventory(fixtures_dir),
+        owners=FixtureOwnerMap(fixtures_dir),
+        repos=FixtureRepoMap(fixtures_dir),
+        defender=FixtureDefender(fixtures_dir),
+        verification=FixtureVerificationSource(fixtures_dir),
+    )
+
 
 router = APIRouter(prefix="/api")
 
@@ -101,6 +122,7 @@ def _ingest(
                 )
             )
             continue
+        get_enrichment_agent().enrich(normalized.evidence)
         repo.upsert_violation(normalized.evidence, raw_id)
         results.append(
             RecordResult(

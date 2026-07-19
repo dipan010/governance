@@ -5,6 +5,15 @@ route, status, blocker, approval state, and verification result.
 """
 
 from enum import StrEnum
+from typing import Any
+
+
+def coerce_enum[E](enum_cls: type[E], value: Any, default: E) -> E:
+    """Coerce a raw value to an enum member, falling back deterministically."""
+    try:
+        return enum_cls(value)  # type: ignore[call-arg]
+    except (ValueError, TypeError):
+        return default
 
 
 class Severity(StrEnum):

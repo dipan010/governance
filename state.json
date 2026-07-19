@@ -2,7 +2,7 @@
   "project": "policy-compliance-drift-detection-agent",
   "schemaVersion": "1.0.0",
   "lastUpdatedAt": "2026-07-19T00:00:00+05:30",
-  "currentPromptId": "P04",
+  "currentPromptId": "P05",
   "currentStatus": "Implemented",
   "promptRuns": [
     {
@@ -196,6 +196,52 @@
         "State files record files changed and result"
       ],
       "nextTriggerPhrase": "START P05 ENRICHMENT"
+    },
+    {
+      "promptId": "P05",
+      "status": "Implemented",
+      "startedAt": "2026-07-19T00:00:00+05:30",
+      "finishedAt": "2026-07-19T00:00:00+05:30",
+      "implemented": [
+        "five fixture-backed connectors behind Protocol interfaces",
+        "deterministic enrichment: environment, data classification, internet exposure, identity impact, dependency count, remediation eligibility",
+        "owner mapping with explicit confidence (High exact, Medium app-tag, Low none)",
+        "repo mapping with source confidence and deterministic source-drift detection",
+        "Defender severity and regulatory control overlay",
+        "history fields and verification query plus before-state attachment",
+        "enrichment wired into ingest pipeline; missing flags cleared only when evidence found"
+      ],
+      "created": [
+        "backend/app/connectors/resource_inventory.py",
+        "backend/app/connectors/owner_map.py",
+        "backend/app/connectors/repo_map.py",
+        "backend/app/connectors/defender.py",
+        "backend/app/connectors/verification_source.py",
+        "backend/app/agents/enrichment_agent.py",
+        "backend/tests/test_enrichment_agent.py",
+        "data/fixtures/defender_assessments.json"
+      ],
+      "changed": [
+        "backend/app/api/findings.py",
+        "backend/app/core/config.py",
+        "backend/app/domain/enums.py",
+        "backend/app/agents/core_policy_agent.py",
+        "IMPLEMENTATION_STATE.md",
+        "state.json"
+      ],
+      "result": "POL-001 enriches as production/restricted/exposed/owner+repo mapped with drift likely (live verified); POL-005 stays ownerless blocker candidate; 39/39 tests pass",
+      "drawbacks": [
+        "defender_assessments.json fixture added beyond original P02 fixture list",
+        "POL-005 has no Defender assessment by design (severity fallback path)",
+        "Activity Log connector not modeled separately; history comes from inventory fixture"
+      ],
+      "validation": [
+        "POL-001 production, restricted, internet exposed, owner mapped, repo mapped",
+        "POL-005 missing owner, safety-blocker candidate",
+        "Enrichment confidence explicit for all findings",
+        "No connector leaks secrets (masking no-op test)"
+      ],
+      "nextTriggerPhrase": "START P06 STORAGE AGENT"
     }
   ]
 }

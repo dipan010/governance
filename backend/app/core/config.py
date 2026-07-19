@@ -6,11 +6,14 @@ database is SQLite; Azure Database for PostgreSQL is the deployment target.
 """
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 APP_NAME = "policy-compliance-drift-agent"
 APP_VERSION = "0.1.0"
+
+DEFAULT_FIXTURES_DIR = Path(__file__).resolve().parents[3] / "data" / "fixtures"
 
 
 class Settings(BaseSettings):
@@ -22,6 +25,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+pysqlite:///./local.db"
     key_vault_uri: str | None = None
     log_level: str = "INFO"
+    fixtures_dir: Path = DEFAULT_FIXTURES_DIR
 
 
 @lru_cache

@@ -16,6 +16,7 @@ from app.domain.enums import (
     EnvironmentType,
     PolicyEffect,
     Severity,
+    coerce_enum,
 )
 from app.domain.evidence_schema import (
     CanonicalEvidence,
@@ -68,11 +69,7 @@ def _parse_segment(resource_id: str, key: str) -> str | None:
     return None
 
 
-def _coerce_enum[E](enum_cls: type[E], value: Any, default: E) -> E:
-    try:
-        return enum_cls(value)  # type: ignore[call-arg]
-    except (ValueError, TypeError):
-        return default
+_coerce_enum = coerce_enum
 
 
 def _parse_evaluated_at(raw: dict[str, Any], now: datetime) -> datetime:

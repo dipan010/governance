@@ -1,0 +1,34 @@
+{
+  "source": "defender_for_cloud_fixture",
+  "collectedAt": "2026-07-18T10:30:00+00:00",
+  "assessments": [
+    {
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.Storage/storageAccounts/stpayprod01",
+      "policyId": "storage-public-network-disabled",
+      "severity": "High",
+      "regulatoryControl": "Network Security",
+      "recommendation": "Storage accounts should restrict network access"
+    },
+    {
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.Network/networkSecurityGroups/nsg-app-prod-01",
+      "policyId": "nsg-restrict-management-ports",
+      "severity": "Critical",
+      "regulatoryControl": "Network Security",
+      "recommendation": "Management ports should be closed on your virtual machines"
+    },
+    {
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.KeyVault/vaults/kv-govdev-01",
+      "policyId": "keyvault-purge-protection-enabled",
+      "severity": "Low",
+      "regulatoryControl": "Data Protection",
+      "recommendation": "Key vaults should have purge protection enabled"
+    },
+    {
+      "resourceId": "/subscriptions/1a2b3c4d-0000-4000-8000-000000000001/resourceGroups/ghq-3-squad3-cloudgov-dev-rg/providers/Microsoft.DBforPostgreSQL/flexibleServers/psql-analytics-dev-01",
+      "policyId": "postgresql-firewall-restrict-cidr",
+      "severity": "Medium",
+      "regulatoryControl": "Network Security",
+      "recommendation": "PostgreSQL server firewall rules should not allow broad ranges"
+    }
+  ]
+}

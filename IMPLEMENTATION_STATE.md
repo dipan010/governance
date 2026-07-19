@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P04
+Current prompt: P05
 Current status: Implemented
 Last updated: 2026-07-19
-Next trigger phrase: `START P05 ENRICHMENT`
+Next trigger phrase: `START P06 STORAGE AGENT`
 
 ---
 
@@ -122,3 +122,29 @@ Next trigger phrase: `START P05 ENRICHMENT`
   - [x] Normalized object matches canonical schema (round-trip validation test)
   - [x] State file records files changed and result (this entry)
 - Next trigger phrase: `START P05 ENRICHMENT`
+
+## P05 — Context enrichment
+
+- Status: Implemented
+- Implemented: five fixture-backed connectors behind Protocol interfaces (swappable for Azure Resource Graph, CMDB, repo map, Defender, verification sources), deterministic EnrichmentAgent filling resource facts (environment, tags, location, criticality), risk signals (data classification, internet exposure, identity impact, dependency count), remediation eligibility, ownership with explicit confidence (High exact match / Medium app-tag inference / Low none), repo mapping with source confidence and deterministic source-drift detection (current vs expected source values), Defender severity + regulatory control overlay, history (first/last seen, previous fix, recurrence), verification query + before-state attachment; enrichment wired into ingest pipeline; missing-evidence flags cleared only when evidence is actually found
+- Created:
+  - backend/app/connectors/resource_inventory.py
+  - backend/app/connectors/owner_map.py
+  - backend/app/connectors/repo_map.py
+  - backend/app/connectors/defender.py
+  - backend/app/connectors/verification_source.py
+  - backend/app/agents/enrichment_agent.py
+  - backend/tests/test_enrichment_agent.py
+  - data/fixtures/defender_assessments.json
+- Changed: backend/app/api/findings.py (enrichment in ingest path), backend/app/core/config.py (fixtures_dir setting), backend/app/domain/enums.py (shared coerce_enum), backend/app/agents/core_policy_agent.py (use shared helper), IMPLEMENTATION_STATE.md, state.json
+- Result: Live verified — POL-001 enriches as Production / Restricted / internet-exposed / Payments Platform owner (High confidence) / repo-mapped with sourceDriftLikely=true and verification query attached; POL-005 keeps missing_owner and missing_repo_map flags with Low owner confidence and Unknown downtime risk (safety-blocker candidate). ruff, mypy strict (34 files), pytest 39/39 pass.
+- Drawbacks:
+  - Defender assessments fixture added (not in original P02 list) to give the Defender connector a real data source
+  - POL-005 intentionally has no Defender assessment, exercising severity fallback to raw evidence
+  - Deployment/pipeline history uses inventory fixture fields; Activity Log connector not modeled separately
+- Validation:
+  - [x] POL-001 enriches as production, restricted, internet exposed, owner mapped, repo mapped
+  - [x] POL-005 remains missing owner and becomes safety-blocker candidate (Low owner confidence, Unknown downtime risk)
+  - [x] Enrichment confidence is explicit (owner and source confidence asserted for all findings)
+  - [x] No connector leaks secrets (mask_sensitive over enriched dumps is a no-op)
+- Next trigger phrase: `START P06 STORAGE AGENT`
