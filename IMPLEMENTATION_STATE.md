@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P02
+Current prompt: P03
 Current status: Implemented
 Last updated: 2026-07-19
-Next trigger phrase: `START P03 BACKEND SCAFFOLD`
+Next trigger phrase: `START P04 INGEST NORMALIZER`
 
 ---
 
@@ -65,3 +65,33 @@ Next trigger phrase: `START P03 BACKEND SCAFFOLD`
   - [x] POL-001 has before and after state (Enabled/Allow → Disabled/Deny)
   - [x] Tests validate required fields and enum values (16 passed)
 - Next trigger phrase: `START P03 BACKEND SCAFFOLD`
+
+## P03 — Backend scaffold
+
+- Status: Implemented
+- Implemented: FastAPI app factory, pydantic-settings config (env/Key Vault ready, no committed secrets), JSON logging with secret-key masking helper, role model with require_role dependency (deny-by-default outside local/test), SQLAlchemy 2.x engine/session with FastAPI dependency, declarative base with naming conventions, health and version endpoints, Makefile task commands, quality tooling (ruff, mypy strict with pydantic plugin, pytest)
+- Created:
+  - backend/pyproject.toml (Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2.x, Alembic, pytest, ruff, mypy)
+  - backend/Makefile (install, format, lint, typecheck, test, run)
+  - backend/app/main.py
+  - backend/app/core/config.py
+  - backend/app/core/logging.py
+  - backend/app/core/security.py
+  - backend/app/db/session.py
+  - backend/app/db/models.py
+  - backend/app/api/health.py
+  - backend/tests/test_health.py
+- Changed: backend/tests/test_evidence_schema.py (typed helpers for mypy strict), IMPLEMENTATION_STATE.md, state.json
+- Result: Backend starts with uvicorn; GET /health returns {"status":"ok"}; GET /api/version returns app and schema version. ruff format+check pass, mypy strict passes (17 files), pytest 18/18 pass. No business logic implemented.
+- Drawbacks:
+  - Alembic is installed but migrations are not initialized yet — deferred until first tables exist (P04)
+  - Local default database is SQLite; Azure Database for PostgreSQL is the deployment target (P16)
+  - Auth resolves to admin in local/test only and denies elsewhere; real Entra ID auth wired at P16
+  - Upstream starlette deprecation warning about httpx test client (not our code)
+- Validation:
+  - [x] Backend starts locally (uvicorn, verified with live requests)
+  - [x] /health returns ok
+  - [x] pytest passes (18/18)
+  - [x] ruff passes (format + lint)
+  - [x] typecheck passes (mypy strict)
+- Next trigger phrase: `START P04 INGEST NORMALIZER`

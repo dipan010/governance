@@ -3,6 +3,7 @@
 import csv
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 from pydantic import ValidationError
@@ -32,18 +33,19 @@ REQUIRED_RAW_FIELDS = [
 ]
 
 
-def load_findings() -> list[dict]:
+def load_findings() -> list[dict[str, Any]]:
     payload = json.loads((FIXTURES / "policy_findings.json").read_text())
-    return payload["findings"]
+    findings: list[dict[str, Any]] = payload["findings"]
+    return findings
 
 
-def load_owner_map() -> dict[str, dict]:
+def load_owner_map() -> dict[str, dict[str, str]]:
     with (FIXTURES / "owner_map.csv").open() as fh:
         return {row["resourceId"].lower(): row for row in csv.DictReader(fh)}
 
 
-def make_minimal_evidence(**overrides) -> CanonicalEvidence:
-    base: dict = {
+def make_minimal_evidence(**overrides: object) -> CanonicalEvidence:
+    base: dict[str, object] = {
         "violationId": "POL-001",
         "policyEvidence": {
             "policyId": "storage-public-network-disabled",
@@ -64,7 +66,9 @@ class TestCanonicalSchema:
     def test_minimal_evidence_validates(self) -> None:
         evidence = make_minimal_evidence()
         assert evidence.schema_version == SCHEMA_VERSION
-        assert evidence.policy_evidence.compliance_state is ComplianceState.NON_COMPLIANT
+        assert (
+            evidence.policy_evidence.compliance_state is ComplianceState.NON_COMPLIANT
+        )
         assert evidence.verification.verification_result is VerificationResult.NOT_RUN
 
     def test_missing_required_fields_rejected(self) -> None:
