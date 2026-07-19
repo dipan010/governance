@@ -15,6 +15,7 @@ from app.agents.core_policy_agent import (
 )
 from app.agents.enrichment_agent import EnrichmentAgent
 from app.agents.nsg_drift_agent import NsgDriftAgent
+from app.agents.routing_planner import RoutingPlanner
 from app.agents.scorer_agent import ScorerAgent
 from app.agents.storage_firewall_agent import StorageFirewallAgent
 from app.connectors.defender import FixtureDefender
@@ -155,6 +156,7 @@ def _ingest(
         get_enrichment_agent().enrich(normalized.evidence)
         apply_focused_agents(normalized.evidence, record)
         ScorerAgent().score(normalized.evidence)
+        RoutingPlanner().route(normalized.evidence)
         repo.upsert_violation(normalized.evidence, raw_id)
         results.append(
             RecordResult(

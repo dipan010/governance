@@ -2,7 +2,7 @@
   "project": "policy-compliance-drift-detection-agent",
   "schemaVersion": "1.0.0",
   "lastUpdatedAt": "2026-07-19T00:00:00+05:30",
-  "currentPromptId": "P09",
+  "currentPromptId": "P10",
   "currentStatus": "Implemented",
   "promptRuns": [
     {
@@ -388,6 +388,46 @@
         "Runtime-only patch labelled temporary when drift exists"
       ],
       "nextTriggerPhrase": "START P10 ROUTING"
+    },
+    {
+      "promptId": "P10",
+      "status": "Implemented",
+      "startedAt": "2026-07-19T00:00:00+05:30",
+      "finishedAt": "2026-07-19T00:00:00+05:30",
+      "implemented": [
+        "pure deterministic route selection over all eight routes, rule version route-1.0.0",
+        "RouteDecision with reason, blockers, side effects, rollback/next action",
+        "exception request validation (owner, justification, compensating control, expiry)",
+        "RoutingPlanner as single writer of decision route fields",
+        "routing wired into ingest pipeline",
+        "POST /api/violations/{id}/route with optional exceptionRequest body"
+      ],
+      "created": [
+        "backend/app/domain/routing.py",
+        "backend/app/agents/routing_planner.py",
+        "backend/app/api/routes.py",
+        "backend/tests/test_routing_planner.py"
+      ],
+      "changed": [
+        "backend/app/api/findings.py",
+        "backend/app/main.py",
+        "IMPLEMENTATION_STATE.md",
+        "state.json"
+      ],
+      "result": "POL-001 source PR+ticket, POL-002/004 owner ticket, POL-003 dry-run with approval, POL-005 blocked (all live verified); exception request flips POL-004 to time_bound_exception; 94/94 tests pass",
+      "drawbacks": [
+        "Documented spec interpretation: unknown side effects block runtime remediation, not source fixes",
+        "escalation/observe routes defined but unreached by fixtures",
+        "Exception requests not yet persisted as records (P12/P14)"
+      ],
+      "validation": [
+        "POL-001 routes to source PR plus change ticket",
+        "POL-002 routes to owner ticket with blockers surfaced",
+        "POL-003 routes to remediation dry-run with approval required",
+        "POL-005 routes to blocked manual review",
+        "Production item does not auto-apply"
+      ],
+      "nextTriggerPhrase": "START P11 APPROVAL GATE"
     }
   ]
 }

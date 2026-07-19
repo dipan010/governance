@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P09
+Current prompt: P10
 Current status: Implemented
 Last updated: 2026-07-19
-Next trigger phrase: `START P10 ROUTING`
+Next trigger phrase: `START P11 APPROVAL GATE`
 
 ---
 
@@ -231,3 +231,26 @@ Next trigger phrase: `START P10 ROUTING`
   - [x] No real branch or PR is created without approval (preview flag, approval notice, action_state.pr_url stays null)
   - [x] Runtime-only patch is labelled temporary when source drift exists
 - Next trigger phrase: `START P10 ROUTING`
+
+## P10 — Remediation Routing Planner
+
+- Status: Implemented
+- Implemented: pure deterministic route selection (domain/routing.py) over all eight routes with rule order: missing resource identity → invalid_finding; missing owner → blocked_manual_review; source drift with repo path → source_pr_plus_change_ticket (approval required, Cloud Governance Approver); valid exception request (owner+justification+compensating control+expiry) → time_bound_exception (approval required, Security/Compliance Lead) with invalid requests surfacing exception_without_expiry and falling to blocked; remediation supported + permission available + non-production + low downtime/restart → remediation_dry_run (approval required, Change Approver); otherwise owner_ticket_or_change_request; RouteDecision carries reason, blockers, side effects, rollback/next action, rule version route-1.0.0; RoutingPlanner agent is the single writer of decision route fields; routing wired into ingest pipeline; POST /api/violations/{id}/route with optional exceptionRequest body
+- Created:
+  - backend/app/domain/routing.py
+  - backend/app/agents/routing_planner.py
+  - backend/app/api/routes.py
+  - backend/tests/test_routing_planner.py
+- Changed: backend/app/api/findings.py (planner in pipeline), backend/app/main.py (routes router), IMPLEMENTATION_STATE.md, state.json
+- Result: Live verified — POL-001 source_pr_plus_change_ticket (approval required, Cloud Governance Approver); POL-002 owner_ticket_or_change_request with unknown_downtime_risk and production blockers surfaced; POL-003 remediation_dry_run (approval required, Change Approver); POL-004 owner_ticket_or_change_request, switching to time_bound_exception via API when a valid exception request is supplied; POL-005 blocked_manual_review with missing_owner. Routing never executes anything: statuses stay Open, no artifact IDs are set, production changing routes carry approvalRequired=true. ruff, mypy strict (51 files), pytest 94/94 pass.
+- Drawbacks:
+  - Documented interpretation of spec section 12: unknown side effects block runtime remediation, not source fixes — otherwise POL-001 could never reach its required source PR route; missing owner always blocks
+  - escalation and observe routes are defined but no fixture reaches them (escalation requires ownerless + valid-exception-less dead end already covered by blocked_manual_review)
+  - Exception requests are evaluated per-call and not yet persisted as exception records (P12/P14)
+- Validation:
+  - [x] POL-001 routes to source PR/comment plus change ticket
+  - [x] POL-002 routes to owner ticket (owner exists; unknown downtime and production evidence surfaced as blockers)
+  - [x] POL-003 routes to remediation dry-run only with approval-ready evidence (approvalRequired=true)
+  - [x] POL-005 routes to blocked/manual review
+  - [x] Production item does not auto-apply (status Open, no artifacts, approval required on changing routes)
+- Next trigger phrase: `START P11 APPROVAL GATE`
