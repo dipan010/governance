@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P07
+Current prompt: P08
 Current status: Implemented
 Last updated: 2026-07-19
-Next trigger phrase: `START P08 SCORING`
+Next trigger phrase: `START P09 SOURCE DRIFT`
 
 ---
 
@@ -186,3 +186,26 @@ Next trigger phrase: `START P08 SCORING`
   - [x] Missing owner produces blocker candidate but not final route (asserted)
   - [x] Agent does not auto-remediate (runtime properties untouched, no remediation task, status stays Open)
 - Next trigger phrase: `START P08 SCORING`
+
+## P08 — Risk and recurrence scoring
+
+- Status: Implemented
+- Implemented: pure deterministic scoring module (point model exactly per spec: severity +20, production +15, sensitive data +20, internet exposure +20, identity impact +15, recurrence +15, source drift +10, strong owner confidence +5; cap 100; bands Critical 80-100 / High 60-79 / Medium 40-59 / Low 0-39), deterministic safety blockers (missing owner/resource identity/failure reason/verification query, unknown downtime/dependency, missing permission check, production runtime change), separate actionability score (owner + source + remediation + permission + verification confidence − 10 per blocker, clamped 0-100), ScorerAgent as the single writer of decision score fields with rule version risk-1.0.0, scoring wired into ingest pipeline, POST /api/violations/{id}/score recompute endpoint, worklist sort=raw|ranked query parameter with score/band/blockers/actionability in summaries; canonical schema bumped to 1.1.0 (additive actionability fields on Decision)
+- Created:
+  - backend/app/domain/scoring.py
+  - backend/app/agents/scorer_agent.py
+  - backend/app/api/scoring.py
+  - backend/tests/test_scoring.py
+- Changed: backend/app/domain/evidence_schema.py (schema 1.1.0, actionability fields), backend/app/api/findings.py (scorer in pipeline, sort param, richer summaries), backend/app/main.py (scoring router), IMPLEMENTATION_STATE.md, state.json
+- Result: Live verified — raw order leads with POL-002 (Critical raw severity); ranked order leads with POL-001 (score 100, Critical band, factors listed with points). POL-005 risk Low(20) but 4 blockers and actionability 0; POL-003 risk Medium(40) with zero blockers and actionability 80 (dry-run candidate); POL-001 Critical yet blocked by production_runtime_change — risk and actionability provably separate. ruff, mypy strict (43 files), pytest 72/72 pass. No LLM anywhere in scoring.
+- Drawbacks:
+  - POL-002 and POL-004 tie at 60; tie broken deterministically by raw severity then ID
+  - Confidential data counts as sensitive (+20) alongside Restricted — documented rule choice
+  - risk_scores DB table from spec section 15 not created; scores persist inside the evidence JSON with rule version (dedicated table can come with P14 audit work if needed)
+- Validation:
+  - [x] POL-001 scores Critical (100, capped from 105)
+  - [x] POL-005 risky but blocked/actionability-limited (blockers surfaced, actionability 0)
+  - [x] Scores are deterministic in tests (repeated runs identical)
+  - [x] LLM is not used for scoring (pure functions only)
+  - [x] Raw severity order differs from agent ranking (POL-002 vs POL-001 first; asserted and live verified)
+- Next trigger phrase: `START P09 SOURCE DRIFT`

@@ -2,7 +2,7 @@
   "project": "policy-compliance-drift-detection-agent",
   "schemaVersion": "1.0.0",
   "lastUpdatedAt": "2026-07-19T00:00:00+05:30",
-  "currentPromptId": "P07",
+  "currentPromptId": "P08",
   "currentStatus": "Implemented",
   "promptRuns": [
     {
@@ -310,6 +310,48 @@
         "Agent does not auto-remediate"
       ],
       "nextTriggerPhrase": "START P08 SCORING"
+    },
+    {
+      "promptId": "P08",
+      "status": "Implemented",
+      "startedAt": "2026-07-19T00:00:00+05:30",
+      "finishedAt": "2026-07-19T00:00:00+05:30",
+      "implemented": [
+        "pure deterministic risk scoring with spec point model, cap 100, bands per spec",
+        "deterministic safety blockers computed centrally",
+        "separate actionability score with blocker weight subtraction",
+        "ScorerAgent as single writer of decision fields, rule version risk-1.0.0",
+        "scoring in ingest pipeline plus POST /api/violations/{id}/score",
+        "worklist sort=raw|ranked with score, band, blockers, actionability in summaries",
+        "canonical schema 1.1.0: additive actionability fields on Decision"
+      ],
+      "created": [
+        "backend/app/domain/scoring.py",
+        "backend/app/agents/scorer_agent.py",
+        "backend/app/api/scoring.py",
+        "backend/tests/test_scoring.py"
+      ],
+      "changed": [
+        "backend/app/domain/evidence_schema.py",
+        "backend/app/api/findings.py",
+        "backend/app/main.py",
+        "IMPLEMENTATION_STATE.md",
+        "state.json"
+      ],
+      "result": "POL-001 Critical 100 leads ranked view while POL-002 leads raw view; POL-005 blocked with actionability 0; POL-003 actionable at 80; 72/72 tests pass",
+      "drawbacks": [
+        "POL-002/POL-004 tie at 60 broken by severity then ID",
+        "Confidential counts as sensitive data alongside Restricted (documented choice)",
+        "risk_scores table not created; scores live in evidence JSON with rule version"
+      ],
+      "validation": [
+        "POL-001 scores Critical",
+        "POL-005 risky but blocked and actionability-limited",
+        "Scores deterministic",
+        "LLM not used for scoring",
+        "Raw severity order differs from agent ranking"
+      ],
+      "nextTriggerPhrase": "START P09 SOURCE DRIFT"
     }
   ]
 }

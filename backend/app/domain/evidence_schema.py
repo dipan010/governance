@@ -26,7 +26,8 @@ from app.domain.enums import (
     VerificationResult,
 )
 
-SCHEMA_VERSION = "1.0.0"
+# 1.1.0: added optional actionability fields to Decision (additive change).
+SCHEMA_VERSION = "1.1.0"
 
 
 class CamelModel(BaseModel):
@@ -117,6 +118,8 @@ class Decision(CamelModel):
     rollback_or_next_action: str | None = None
     score_rule_version: str | None = None
     route_rule_version: str | None = None
+    actionability_score: int | None = Field(default=None, ge=0, le=100)
+    actionability_factors: list[str] = Field(default_factory=list)
 
 
 class ActionState(CamelModel):

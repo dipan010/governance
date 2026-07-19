@@ -15,6 +15,7 @@ from app.agents.core_policy_agent import (
 )
 from app.agents.enrichment_agent import EnrichmentAgent
 from app.agents.nsg_drift_agent import NsgDriftAgent
+from app.agents.scorer_agent import ScorerAgent
 from app.agents.storage_firewall_agent import StorageFirewallAgent
 from app.connectors.defender import FixtureDefender
 from app.connectors.owner_map import FixtureOwnerMap
@@ -24,8 +25,10 @@ from app.connectors.verification_source import FixtureVerificationSource
 from app.core.config import get_settings
 from app.core.security import Role, require_role
 from app.db.session import get_db
+from app.domain.enums import Severity, coerce_enum
 from app.domain.evidence_schema import CanonicalEvidence
 from app.domain.focused_signals import merge_signals
+from app.domain.scoring import severity_rank
 from app.domain.validation import IssueSeverity, ValidationIssue
 from app.repositories.violations_repo import ViolationsRepository
 
@@ -102,6 +105,10 @@ class ViolationSummary(BaseModel):
     compliance_state: str = Field(alias="complianceState")
     action_status: str = Field(alias="actionStatus")
     missing_evidence: list[str] = Field(alias="missingEvidence")
+    risk_score: int | None = Field(alias="riskScore", default=None)
+    risk_band: str | None = Field(alias="riskBand", default=None)
+    blockers: list[str] = Field(default_factory=list)
+    actionability_score: int | None = Field(alias="actionabilityScore", default=None)
 
 
 class ViolationDetail(BaseModel):
@@ -147,6 +154,7 @@ def _ingest(
             continue
         get_enrichment_agent().enrich(normalized.evidence)
         apply_focused_agents(normalized.evidence, record)
+        ScorerAgent().score(normalized.evidence)
         repo.upsert_violation(normalized.evidence, raw_id)
         results.append(
             RecordResult(
@@ -179,20 +187,42 @@ def ingest_defender(
 
 
 @router.get("/violations")
-def list_violations(db: DbSession) -> list[ViolationSummary]:
+def list_violations(
+    db: DbSession, sort: Literal["raw", "ranked"] = "ranked"
+) -> list[ViolationSummary]:
+    """Worklist. sort=raw orders by raw severity only; sort=ranked orders by
+    the agent's risk score — the two must be comparable to prove the scorer
+    improves prioritization."""
     repo = ViolationsRepository(db)
-    return [
-        ViolationSummary(
-            violation_id=row.violation_id,
-            policy_id=row.policy_id,
-            resource_id=row.resource_id,
-            severity=row.severity,
-            compliance_state=row.compliance_state,
-            action_status=row.action_status,
-            missing_evidence=row.missing_evidence,
+    summaries = []
+    for row in repo.list_violations():
+        decision = row.evidence.get("decision", {})
+        summaries.append(
+            ViolationSummary(
+                violation_id=row.violation_id,
+                policy_id=row.policy_id,
+                resource_id=row.resource_id,
+                severity=row.severity,
+                compliance_state=row.compliance_state,
+                action_status=row.action_status,
+                missing_evidence=row.missing_evidence,
+                risk_score=decision.get("riskScore"),
+                risk_band=decision.get("riskBand"),
+                blockers=decision.get("blockers", []),
+                actionability_score=decision.get("actionabilityScore"),
+            )
         )
-        for row in repo.list_violations()
-    ]
+
+    def raw_key(s: ViolationSummary) -> tuple[int, str]:
+        rank = severity_rank(coerce_enum(Severity, s.severity, Severity.UNKNOWN))
+        return (-rank, s.violation_id)
+
+    def ranked_key(s: ViolationSummary) -> tuple[int, int, str]:
+        rank = severity_rank(coerce_enum(Severity, s.severity, Severity.UNKNOWN))
+        return (-(s.risk_score or 0), -rank, s.violation_id)
+
+    summaries.sort(key=raw_key if sort == "raw" else ranked_key)
+    return summaries
 
 
 @router.get("/violations/{violation_id}")
