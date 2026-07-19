@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P08
+Current prompt: P09
 Current status: Implemented
 Last updated: 2026-07-19
-Next trigger phrase: `START P09 SOURCE DRIFT`
+Next trigger phrase: `START P10 ROUTING`
 
 ---
 
@@ -209,3 +209,25 @@ Next trigger phrase: `START P09 SOURCE DRIFT`
   - [x] LLM is not used for scoring (pure functions only)
   - [x] Raw severity order differs from agent ranking (POL-002 vs POL-001 first; asserted and live verified)
 - Next trigger phrase: `START P09 SOURCE DRIFT`
+
+## P09 — Source-of-Truth Drift Agent
+
+- Status: Implemented
+- Implemented: SourceDriftAgent comparing failing runtime properties against repo-map current/expected source values, authoritative setter of history.sourceDriftLikely and history.sourceConfidence, runtime_patch_temporary flag (true whenever source still holds the bad value), analysis carrying repo/file/module/CODEOWNER/pipeline/drifted properties/verification query; deterministic PR/comment preview composer producing markdown with failing-property table, expected after-state, verification query, TEMPORARY runtime-patch warning, and explicit approval notice — preview only, no branch/commit/PR is ever created
+- Created:
+  - backend/app/agents/source_drift_agent.py
+  - backend/app/agents/pr_comment_composer.py
+  - backend/tests/test_source_drift_agent.py
+  - backend/tests/test_pr_comment_composer.py
+- Changed: IMPLEMENTATION_STATE.md, state.json
+- Result: POL-001 analysis: sourceDriftLikely=true, sourceConfidence=High, two drifted properties (public_network_access_enabled true→false, network_rules.default_action Allow→Deny), runtime patch marked temporary; preview rendered with title "fix(payments-storage): POL-001 — …", full source-fix body, expected after-state, and approval notice. POL-003 mapped without drift (runtime patch not temporary); POL-005 unmapped returns None with Unknown source confidence. ruff, mypy strict (47 files), pytest 82/82 pass.
+- Drawbacks:
+  - Composer is template-based (deterministic); optional LLM polish for owner-friendly wording can be layered at P12 within AI-usage rules
+  - compose_pr_comment raises ValueError when no drift exists — callers (P12 artifacts) must route non-drift cases elsewhere
+  - Preview is not yet persisted or exposed via API; artifact generation endpoint arrives at P12
+- Validation:
+  - [x] POL-001 has high source confidence
+  - [x] PR/comment includes expected after-state (source values and compliant runtime value)
+  - [x] No real branch or PR is created without approval (preview flag, approval notice, action_state.pr_url stays null)
+  - [x] Runtime-only patch is labelled temporary when source drift exists
+- Next trigger phrase: `START P10 ROUTING`

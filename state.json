@@ -2,7 +2,7 @@
   "project": "policy-compliance-drift-detection-agent",
   "schemaVersion": "1.0.0",
   "lastUpdatedAt": "2026-07-19T00:00:00+05:30",
-  "currentPromptId": "P08",
+  "currentPromptId": "P09",
   "currentStatus": "Implemented",
   "promptRuns": [
     {
@@ -352,6 +352,42 @@
         "Raw severity order differs from agent ranking"
       ],
       "nextTriggerPhrase": "START P09 SOURCE DRIFT"
+    },
+    {
+      "promptId": "P09",
+      "status": "Implemented",
+      "startedAt": "2026-07-19T00:00:00+05:30",
+      "finishedAt": "2026-07-19T00:00:00+05:30",
+      "implemented": [
+        "SourceDriftAgent comparing runtime failure properties with repo-map current/expected source values",
+        "authoritative sourceDriftLikely and sourceConfidence on evidence",
+        "runtime_patch_temporary flag when source still contains the bad value",
+        "deterministic PR/comment preview with repo, file, module, CODEOWNER, failing properties, current/expected values, expected after-state, verification query",
+        "explicit approval notice; preview only, no real branch or PR"
+      ],
+      "created": [
+        "backend/app/agents/source_drift_agent.py",
+        "backend/app/agents/pr_comment_composer.py",
+        "backend/tests/test_source_drift_agent.py",
+        "backend/tests/test_pr_comment_composer.py"
+      ],
+      "changed": [
+        "IMPLEMENTATION_STATE.md",
+        "state.json"
+      ],
+      "result": "POL-001: drift likely, High confidence, two drifted properties, temporary-patch warning, full preview rendered; POL-003 mapped no-drift; POL-005 unmapped None; 82/82 tests pass",
+      "drawbacks": [
+        "Composer is template-based; optional LLM wording polish deferred to P12 within AI rules",
+        "compose_pr_comment raises when no drift; non-drift cases route elsewhere at P12",
+        "Preview not yet persisted/exposed via API until P12 artifacts"
+      ],
+      "validation": [
+        "POL-001 has high source confidence",
+        "PR/comment includes expected after-state",
+        "No real branch or PR without approval",
+        "Runtime-only patch labelled temporary when drift exists"
+      ],
+      "nextTriggerPhrase": "START P10 ROUTING"
     }
   ]
 }
