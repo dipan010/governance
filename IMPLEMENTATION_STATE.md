@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P06
+Current prompt: P07
 Current status: Implemented
 Last updated: 2026-07-19
-Next trigger phrase: `START P07 NSG AGENT`
+Next trigger phrase: `START P08 SCORING`
 
 ---
 
@@ -168,3 +168,21 @@ Next trigger phrase: `START P07 NSG AGENT`
   - [x] Agent does not calculate final risk score (decision fields stay null; asserted in test)
   - [x] Agent does not choose final route (asserted in test)
 - Next trigger phrase: `START P07 NSG AGENT`
+
+## P07 — NSG Drift Management Agent
+
+- Status: Implemented
+- Implemented: NSG Drift Management Agent scoped to Microsoft.Network/networkSecurityGroups; per-rule detection on inbound allow rules only (broad source prefix *, 0.0.0.0/0, Internet → broad_source_cidr; destination port in 22/3389/1433/5432, ranges containing them, `*`, or ranges ≥512 wide → sensitive_port_exposed; priority differing from baseline → priority_drift); safety-blocker candidates (missing_owner, unknown_downtime_risk, unknown_dependency_impact, production_runtime_change) emitted as candidates only — routing planner decides at P10; pipeline wiring alongside the storage agent
+- Created:
+  - backend/app/agents/nsg_drift_agent.py
+  - backend/tests/test_nsg_drift_agent.py
+- Changed: backend/app/api/findings.py (NSG agent in focused-agent step), IMPLEMENTATION_STATE.md, state.json
+- Result: Live verified — POL-002 finding card shows broad_source_cidr, sensitive_port_exposed, priority_drift with decision fields null and action status Open. POL-002 blocker candidates are unknown_downtime_risk and production_runtime_change (owner exists); removing the owner adds missing_owner as a candidate without setting any route. Deny/outbound rules are ignored. ruff, mypy strict (39 files), pytest 61/61 pass.
+- Drawbacks:
+  - Blocker candidates are computed but not yet persisted on the violation (decision.blockers is owned by the scorer/routing at P08/P10)
+  - Port-range parsing treats malformed ranges as not sensitive (deterministic, but a real connector should validate rule shapes upstream)
+- Validation:
+  - [x] POL-002 gets broad_source_cidr and sensitive_port_exposed (plus priority_drift; live verified)
+  - [x] Missing owner produces blocker candidate but not final route (asserted)
+  - [x] Agent does not auto-remediate (runtime properties untouched, no remediation task, status stays Open)
+- Next trigger phrase: `START P08 SCORING`

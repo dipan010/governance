@@ -14,6 +14,7 @@ from app.agents.core_policy_agent import (
     normalize_policy_finding,
 )
 from app.agents.enrichment_agent import EnrichmentAgent
+from app.agents.nsg_drift_agent import NsgDriftAgent
 from app.agents.storage_firewall_agent import StorageFirewallAgent
 from app.connectors.defender import FixtureDefender
 from app.connectors.owner_map import FixtureOwnerMap
@@ -55,6 +56,9 @@ def apply_focused_agents(evidence: CanonicalEvidence, record: dict[str, Any]) ->
         merge_signals(
             evidence, storage_agent.detect(evidence, runtime_properties, repo_mapping)
         )
+    nsg_agent = NsgDriftAgent()
+    if nsg_agent.applies_to(evidence):
+        merge_signals(evidence, nsg_agent.detect(evidence, runtime_properties))
 
 
 router = APIRouter(prefix="/api")

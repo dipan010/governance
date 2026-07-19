@@ -2,7 +2,7 @@
   "project": "policy-compliance-drift-detection-agent",
   "schemaVersion": "1.0.0",
   "lastUpdatedAt": "2026-07-19T00:00:00+05:30",
-  "currentPromptId": "P06",
+  "currentPromptId": "P07",
   "currentStatus": "Implemented",
   "promptRuns": [
     {
@@ -276,6 +276,40 @@
         "Agent does not choose final route"
       ],
       "nextTriggerPhrase": "START P07 NSG AGENT"
+    },
+    {
+      "promptId": "P07",
+      "status": "Implemented",
+      "startedAt": "2026-07-19T00:00:00+05:30",
+      "finishedAt": "2026-07-19T00:00:00+05:30",
+      "implemented": [
+        "NSG Drift Management Agent with per-rule detection on inbound allow rules",
+        "broad_source_cidr for *, 0.0.0.0/0, Internet source prefixes",
+        "sensitive_port_exposed for 22/3389/1433/5432, containing ranges, *, or ranges >= 512 wide",
+        "priority_drift when rule priority differs from baseline",
+        "safety-blocker candidates: missing_owner, unknown_downtime_risk, unknown_dependency_impact, production_runtime_change",
+        "pipeline wiring alongside storage agent"
+      ],
+      "created": [
+        "backend/app/agents/nsg_drift_agent.py",
+        "backend/tests/test_nsg_drift_agent.py"
+      ],
+      "changed": [
+        "backend/app/api/findings.py",
+        "IMPLEMENTATION_STATE.md",
+        "state.json"
+      ],
+      "result": "POL-002 card shows broad_source_cidr, sensitive_port_exposed, priority_drift with decision fields null (live verified); blocker candidates computed; 61/61 tests pass",
+      "drawbacks": [
+        "Blocker candidates not yet persisted; scorer/routing own decision.blockers at P08/P10",
+        "Malformed port ranges treated as not sensitive"
+      ],
+      "validation": [
+        "POL-002 gets broad_source_cidr and sensitive_port_exposed",
+        "Missing owner produces blocker candidate but not final route",
+        "Agent does not auto-remediate"
+      ],
+      "nextTriggerPhrase": "START P08 SCORING"
     }
   ]
 }
