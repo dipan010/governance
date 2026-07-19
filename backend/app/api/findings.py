@@ -31,6 +31,7 @@ from app.domain.evidence_schema import CanonicalEvidence
 from app.domain.focused_signals import merge_signals
 from app.domain.scoring import severity_rank
 from app.domain.validation import IssueSeverity, ValidationIssue
+from app.repositories.approvals_repo import ApprovalsRepository
 from app.repositories.violations_repo import ViolationsRepository
 
 
@@ -119,6 +120,7 @@ class ViolationDetail(BaseModel):
     evidence: dict[str, Any]
     missing_evidence: list[str] = Field(alias="missingEvidence")
     raw_evidence: dict[str, Any] | None = Field(alias="rawEvidence")
+    approvals: list[dict[str, Any]] = Field(default_factory=list)
 
 
 def _ingest(
@@ -237,9 +239,21 @@ def get_violation(violation_id: str, db: DbSession) -> ViolationDetail:
             detail={"error": "violation_not_found", "violationId": violation_id},
         )
     raw = repo.get_raw_finding(row.raw_finding_id)
+    approvals = [
+        {
+            "approvalId": a.id,
+            "status": a.status,
+            "approverRole": a.approver_role,
+            "approver": a.approver,
+            "reason": a.reason,
+            "payload": a.payload,
+        }
+        for a in ApprovalsRepository(db).list_for(violation_id)
+    ]
     return ViolationDetail(
         violation_id=row.violation_id,
         evidence=row.evidence,
         missing_evidence=row.missing_evidence,
         raw_evidence=raw.payload if raw else None,
+        approvals=approvals,
     )

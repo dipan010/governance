@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.api.approvals import router as approvals_router
 from app.api.findings import router as findings_router
 from app.api.health import router as health_router
 from app.api.routes import router as routes_router
@@ -30,6 +31,7 @@ def create_app() -> FastAPI:
     app.include_router(findings_router)
     app.include_router(scoring_router)
     app.include_router(routes_router)
+    app.include_router(approvals_router)
     return app
 
 

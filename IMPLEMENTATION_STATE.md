@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P10
+Current prompt: P11
 Current status: Implemented
 Last updated: 2026-07-19
-Next trigger phrase: `START P11 APPROVAL GATE`
+Next trigger phrase: `START P12 ARTIFACTS`
 
 ---
 
@@ -254,3 +254,27 @@ Next trigger phrase: `START P11 APPROVAL GATE`
   - [x] POL-005 routes to blocked/manual review
   - [x] Production item does not auto-apply (status Open, no artifacts, approval required on changing routes)
 - Next trigger phrase: `START P11 APPROVAL GATE`
+
+## P11 — Approval gate
+
+- Status: Implemented
+- Implemented: approval domain (change categories for runtime cloud / source code / network exposure / identity / production behavior changes; action kinds split into drafts allowed without approval, approval-required dry-run execution, and hackathon-forbidden runtime_apply/source_push refused even with approval; validate_action as the single deterministic enforcement point), ApprovalPayload with approver role, resource, route, risk score+factors, blockers, side effects, rollback/next action, verification query, change categories, rule version approval-1.0.0; ApprovalGate agent (request → AwaitingApproval; approve → approver+timestamp+Approved; reject/defer require reason, persist it; Rejected status recorded); approvals table with reversible migration 7ecc100ab2b6; API: POST approval-request, POST approve (approver role required), GET approvals; finding card (GET /violations/{id}) now includes approvals with payloads
+- Created:
+  - backend/app/domain/approval.py
+  - backend/app/agents/approval_gate.py
+  - backend/app/api/approvals.py
+  - backend/app/repositories/approvals_repo.py
+  - backend/migrations/versions/7ecc100ab2b6_approvals_table.py
+  - backend/tests/test_approval_gate.py
+- Changed: backend/app/db/models.py (ApprovalRow), backend/app/domain/routing.py (side_effects_for made public), backend/app/api/findings.py (approvals on finding card), backend/app/main.py (approvals router), IMPLEMENTATION_STATE.md, state.json
+- Result: Live verified — POL-003 approval request carries Change Approver role and change categories [runtime_cloud_change, identity_change]; approve records approver and flips card actionStatus to Approved with the payload visible on the finding card. Dry-run execution raises ApprovalRequiredError until approved; runtime_apply and source_push are refused in hackathon mode even after approval; rejection persists with reason (Rejected + "Change freeze"); reject/defer without reason is refused (403 via API). ruff, mypy strict (56 files), pytest 105/105 pass.
+- Drawbacks:
+  - Approver identity is a free-text field authenticated only by the local/test role stub until P16 Entra ID wiring
+  - "Action buttons disabled without approval" is a frontend concern (P15); the backend enforces via validate_action and exposes approval state for the UI
+  - repositories/approvals_repo.py added beyond the runbook's four listed files (separation of concerns)
+- Validation:
+  - [x] Cloud/source-changing action cannot execute without approval (dry-run raises until Approved; forbidden actions always refused)
+  - [x] Production route cannot auto-apply (runtime_apply/source_push refused even with approval)
+  - [x] Approval payload is visible in finding card (approvals list on GET /violations/{id})
+  - [x] Rejection reason persists (DB row Rejected with reason and decided_at)
+- Next trigger phrase: `START P12 ARTIFACTS`

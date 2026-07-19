@@ -53,7 +53,7 @@ class RouteDecision(BaseModel):
     rule_version: str = ROUTE_RULE_VERSION
 
 
-def _side_effects(evidence: CanonicalEvidence) -> list[str]:
+def side_effects_for(evidence: CanonicalEvidence) -> list[str]:
     eligibility = evidence.remediation_eligibility
     effects = [
         f"restart risk: {eligibility.restart_risk.value}",
@@ -70,7 +70,7 @@ def plan_route(
     exception_request: ExceptionRequest | None = None,
 ) -> RouteDecision:
     blockers = compute_blockers(evidence)
-    side_effects = _side_effects(evidence)
+    side_effects = side_effects_for(evidence)
 
     def decision(
         route: RoutePath,

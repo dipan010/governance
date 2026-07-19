@@ -34,6 +34,24 @@ class RawFindingRow(Base):
     payload: Mapped[dict[str, Any]] = mapped_column(JSON)
 
 
+class ApprovalRow(Base):
+    __tablename__ = "approvals"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    violation_id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("violations.violation_id"), index=True
+    )
+    status: Mapped[str] = mapped_column(String(16), index=True)
+    approver_role: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    approver: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    reason: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON)
+    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    decided_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+
 class ViolationRow(Base):
     __tablename__ = "violations"
 
