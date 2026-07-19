@@ -2,7 +2,7 @@
   "project": "policy-compliance-drift-detection-agent",
   "schemaVersion": "1.0.0",
   "lastUpdatedAt": "2026-07-19T00:00:00+05:30",
-  "currentPromptId": "P05",
+  "currentPromptId": "P06",
   "currentStatus": "Implemented",
   "promptRuns": [
     {
@@ -242,6 +242,40 @@
         "No connector leaks secrets (masking no-op test)"
       ],
       "nextTriggerPhrase": "START P06 STORAGE AGENT"
+    },
+    {
+      "promptId": "P06",
+      "status": "Implemented",
+      "startedAt": "2026-07-19T00:00:00+05:30",
+      "finishedAt": "2026-07-19T00:00:00+05:30",
+      "implemented": [
+        "shared focused-signal model with per-signal backing evidence and idempotent merge",
+        "Storage Firewall Compliance Agent with four deterministic detection rules",
+        "applies_to guard scoping to Microsoft.Storage/storageAccounts",
+        "pipeline wiring: focused agents run after enrichment, emit signals only"
+      ],
+      "created": [
+        "backend/app/domain/focused_signals.py",
+        "backend/app/agents/storage_firewall_agent.py",
+        "backend/tests/test_storage_firewall_agent.py"
+      ],
+      "changed": [
+        "backend/app/api/findings.py",
+        "IMPLEMENTATION_STATE.md",
+        "state.json"
+      ],
+      "result": "POL-001 card shows all four storage signals with decision fields untouched (live verified); 45/45 tests pass",
+      "drawbacks": [
+        "Focused-agent orchestration lives in ingest path; revisit if agent count grows",
+        "Per-signal evidence facts not yet persisted on card; needed for artifacts at P12"
+      ],
+      "validation": [
+        "POL-001 gets storage_public_network_access",
+        "POL-001 gets source_drift_likely from bad repo property",
+        "Agent does not calculate final risk score",
+        "Agent does not choose final route"
+      ],
+      "nextTriggerPhrase": "START P07 NSG AGENT"
     }
   ]
 }

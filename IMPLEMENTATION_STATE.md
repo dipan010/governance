@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P05
+Current prompt: P06
 Current status: Implemented
 Last updated: 2026-07-19
-Next trigger phrase: `START P06 STORAGE AGENT`
+Next trigger phrase: `START P07 NSG AGENT`
 
 ---
 
@@ -148,3 +148,23 @@ Next trigger phrase: `START P06 STORAGE AGENT`
   - [x] Enrichment confidence is explicit (owner and source confidence asserted for all findings)
   - [x] No connector leaks secrets (mask_sensitive over enriched dumps is a no-op)
 - Next trigger phrase: `START P06 STORAGE AGENT`
+
+## P06 — Storage Firewall Compliance Agent
+
+- Status: Implemented
+- Implemented: shared focused-signal model (SignalDetection with backing evidence fact and source runtime/source/inventory, FocusedAgentResult with blocker candidates, idempotent merge into finding card data), Storage Firewall Compliance Agent with four deterministic detection rules (publicNetworkAccess Enabled → storage_public_network_access; networkAcls.defaultAction Allow → storage_firewall_default_allow; Restricted data without private endpoint → private_endpoint_gap; drifted public-access source property → source_drift_likely), applies_to guard scoping the agent to Microsoft.Storage/storageAccounts, pipeline wiring after enrichment
+- Created:
+  - backend/app/domain/focused_signals.py
+  - backend/app/agents/storage_firewall_agent.py
+  - backend/tests/test_storage_firewall_agent.py
+- Changed: backend/app/api/findings.py (apply_focused_agents step in ingest pipeline), IMPLEMENTATION_STATE.md, state.json
+- Result: Live verified — POL-001 finding card shows all four storage signals (storage_public_network_access, storage_firewall_default_allow, private_endpoint_gap, source_drift_likely) while decision.riskScore and decision.recommendedPath remain null. Compliant storage emits zero signals; compliant source mapping emits no drift signal. ruff, mypy strict (37 files), pytest 45/45 pass.
+- Drawbacks:
+  - Focused-agent orchestration lives in the ingest path (api/findings.py); if more agents accumulate, a dedicated pipeline module would be cleaner (NSG agent in P07 reuses the same hook)
+  - Signal detections (evidence facts per signal) are computed but only the signal enum is persisted on the card; full detections become useful for artifacts (P12)
+- Validation:
+  - [x] POL-001 gets storage_public_network_access
+  - [x] POL-001 gets source_drift_likely (repo property public_network_access_enabled is 'true', expected 'false')
+  - [x] Agent does not calculate final risk score (decision fields stay null; asserted in test)
+  - [x] Agent does not choose final route (asserted in test)
+- Next trigger phrase: `START P07 NSG AGENT`

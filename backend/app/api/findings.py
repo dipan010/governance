@@ -14,6 +14,7 @@ from app.agents.core_policy_agent import (
     normalize_policy_finding,
 )
 from app.agents.enrichment_agent import EnrichmentAgent
+from app.agents.storage_firewall_agent import StorageFirewallAgent
 from app.connectors.defender import FixtureDefender
 from app.connectors.owner_map import FixtureOwnerMap
 from app.connectors.repo_map import FixtureRepoMap
@@ -22,6 +23,8 @@ from app.connectors.verification_source import FixtureVerificationSource
 from app.core.config import get_settings
 from app.core.security import Role, require_role
 from app.db.session import get_db
+from app.domain.evidence_schema import CanonicalEvidence
+from app.domain.focused_signals import merge_signals
 from app.domain.validation import IssueSeverity, ValidationIssue
 from app.repositories.violations_repo import ViolationsRepository
 
@@ -36,6 +39,22 @@ def get_enrichment_agent() -> EnrichmentAgent:
         defender=FixtureDefender(fixtures_dir),
         verification=FixtureVerificationSource(fixtures_dir),
     )
+
+
+@lru_cache
+def get_repo_map() -> FixtureRepoMap:
+    return FixtureRepoMap(get_settings().fixtures_dir)
+
+
+def apply_focused_agents(evidence: CanonicalEvidence, record: dict[str, Any]) -> None:
+    """Run focused agents in the pipeline; they emit signals only."""
+    runtime_properties: dict[str, Any] = record.get("properties") or {}
+    repo_mapping = get_repo_map().get_mapping(evidence.resource_facts.resource_id)
+    storage_agent = StorageFirewallAgent()
+    if storage_agent.applies_to(evidence):
+        merge_signals(
+            evidence, storage_agent.detect(evidence, runtime_properties, repo_mapping)
+        )
 
 
 router = APIRouter(prefix="/api")
@@ -123,6 +142,7 @@ def _ingest(
             )
             continue
         get_enrichment_agent().enrich(normalized.evidence)
+        apply_focused_agents(normalized.evidence, record)
         repo.upsert_violation(normalized.evidence, raw_id)
         results.append(
             RecordResult(
