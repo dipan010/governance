@@ -1,0 +1,69 @@
+{
+  "project": "policy-compliance-drift-detection-agent",
+  "schemaVersion": "1.0.0",
+  "lastUpdatedAt": "2026-07-19T00:00:00+05:30",
+  "currentPromptId": "P01",
+  "currentStatus": "Implemented",
+  "promptRuns": [
+    {
+      "promptId": "P00",
+      "status": "Implemented",
+      "startedAt": "2026-07-19T00:00:00+05:30",
+      "finishedAt": "2026-07-19T00:00:00+05:30",
+      "implemented": [
+        "rules file",
+        "implementation spec",
+        "state tracker",
+        "prompt runbook"
+      ],
+      "created": [
+        "RULES.md",
+        "IMPLEMENTATION_SPEC.md",
+        "IMPLEMENTATION_STATE.md",
+        "PROMPT_RUNBOOK.md",
+        "state.json"
+      ],
+      "changed": [],
+      "result": "Repo bootstrapped with project contract; ready for requirements lock",
+      "drawbacks": [
+        "Ticketing system not finalized",
+        "Approver identities not finalized"
+      ],
+      "validation": [
+        "Contract files present in repo root"
+      ],
+      "nextTriggerPhrase": "START P01 REQUIREMENTS LOCK"
+    },
+    {
+      "promptId": "P01",
+      "status": "Implemented",
+      "startedAt": "2026-07-19T00:00:00+05:30",
+      "finishedAt": "2026-07-19T00:00:00+05:30",
+      "implemented": [
+        "requirements lock document with purpose, audience, MVP target, cloud scope, primary outcome, use case portfolio, build priority, required agent suite, personas, acceptance criteria, selected focused agents, out-of-scope, assumptions, misimplementation warnings"
+      ],
+      "created": [
+        "docs/REQUIREMENTS_LOCK.md"
+      ],
+      "changed": [
+        "IMPLEMENTATION_STATE.md",
+        "state.json"
+      ],
+      "result": "Scope locked: Storage Firewall + NSG Drift focused agents, backbone P0 not deferred, AC-1..AC-9 mapped one-to-one, extra agents deferred. No code changed.",
+      "drawbacks": [
+        "Ticketing system (ServiceNow vs Jira) not finalized",
+        "Approver identities not finalized",
+        "Azure hosting choice deferred to P16",
+        "Azure OpenAI availability for demo drafts unconfirmed"
+      ],
+      "validation": [
+        "MVP keeps Storage Firewall and NSG as focused agents",
+        "Required backbone is not deferred",
+        "Acceptance criteria map one-to-one to implementation proof",
+        "Out-of-scope defers extra agents until backbone works",
+        "State files record result and drawbacks"
+      ],
+      "nextTriggerPhrase": "START P02 SCHEMA AND FIXTURES"
+    }
+  ]
+}
