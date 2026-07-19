@@ -2,7 +2,7 @@
   "project": "policy-compliance-drift-detection-agent",
   "schemaVersion": "1.0.0",
   "lastUpdatedAt": "2026-07-19T00:00:00+05:30",
-  "currentPromptId": "P13",
+  "currentPromptId": "P14",
   "currentStatus": "Implemented",
   "promptRuns": [
     {
@@ -554,6 +554,54 @@
         "Ticket/PR creation alone does not close item"
       ],
       "nextTriggerPhrase": "START P14 AUDIT STORE"
+    },
+    {
+      "promptId": "P14",
+      "status": "Implemented",
+      "startedAt": "2026-07-19T00:00:00+05:30",
+      "finishedAt": "2026-07-19T00:00:00+05:30",
+      "implemented": [
+        "audit domain with full spec event catalog and prompt-run ID from state.json",
+        "AuditRepository: correlation ID, action ID, evidence packet location, masked payloads",
+        "application-level append-only guard (updates/deletes raise)",
+        "evidence packet store connector (local JSON, Azure Blob swappable)",
+        "audit emission wired across ingest pipeline, approvals, artifacts, verification, closure",
+        "GET /api/audit/{violationId}",
+        "audit_events columns prompt_run_id and evidence_packet with reversible migration"
+      ],
+      "created": [
+        "backend/app/domain/audit.py",
+        "backend/app/repositories/audit_repo.py",
+        "backend/app/api/audit.py",
+        "backend/app/connectors/storage.py",
+        "backend/migrations/versions/380983188d8c_audit_prompt_run_id_and_evidence_packet.py",
+        "backend/tests/test_audit_store.py"
+      ],
+      "changed": [
+        "backend/app/db/models.py",
+        "backend/app/core/config.py",
+        "backend/app/agents/verification_engine.py",
+        "backend/app/api/verification.py",
+        "backend/app/api/findings.py",
+        "backend/app/api/approvals.py",
+        "backend/app/api/artifacts.py",
+        ".gitignore",
+        "IMPLEMENTATION_STATE.md",
+        "state.json"
+      ],
+      "result": "Every major decision audited with correlation and prompt-run IDs; evidence packets stored masked; append-only enforced; 138/138 tests pass",
+      "drawbacks": [
+        "prompt_run_id cached per process start",
+        "Evidence packets local until Azure Blob at P16",
+        "Database-level immutability is a P16 deployment concern"
+      ],
+      "validation": [
+        "Every major decision has audit event",
+        "Audit includes prompt run ID",
+        "Secret masking test passes",
+        "Audit is append-only at application level"
+      ],
+      "nextTriggerPhrase": "START P15 FRONTEND"
     }
   ]
 }

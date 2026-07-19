@@ -7,6 +7,7 @@ from fastapi import FastAPI
 
 from app.api.approvals import router as approvals_router
 from app.api.artifacts import router as artifacts_router
+from app.api.audit import router as audit_router
 from app.api.findings import router as findings_router
 from app.api.health import router as health_router
 from app.api.routes import router as routes_router
@@ -36,6 +37,7 @@ def create_app() -> FastAPI:
     app.include_router(approvals_router)
     app.include_router(artifacts_router)
     app.include_router(verification_router)
+    app.include_router(audit_router)
     return app
 
 

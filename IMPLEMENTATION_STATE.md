@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P13
+Current prompt: P14
 Current status: Implemented
 Last updated: 2026-07-19
-Next trigger phrase: `START P14 AUDIT STORE`
+Next trigger phrase: `START P15 FRONTEND`
 
 ---
 
@@ -327,3 +327,27 @@ Next trigger phrase: `START P14 AUDIT STORE`
   - [x] Failed verification keeps item open and returns next action
   - [x] Ticket/PR creation alone does not close item (ArtifactCreated ≠ Closed; close still 409)
 - Next trigger phrase: `START P14 AUDIT STORE`
+
+## P14 — Audit store
+
+- Status: Implemented
+- Implemented: audit domain with the full spec event catalog (finding.ingested/normalized/enriched, focused_agent.signals_detected, risk.scored, route.planned, approval.requested/approved/rejected/deferred, artifact.generated, verification.completed, violation.closed, violation.blocked, exception.created), prompt-run ID read from state.json and stamped on every event, AuditRepository with correlation ID + action ID + evidence packet location + mask_sensitive on every payload, application-level append-only enforcement (SQLAlchemy before_flush guard raising AppendOnlyViolationError on any update or delete of audit rows; repository exposes no mutation methods), evidence packet store connector behind a Protocol (LocalEvidencePacketStore writing masked JSON packets, swappable for Azure Blob + managed identity), audit emission wired across the whole pipeline (ingest emits six event types per record sharing one correlation ID; approvals, artifacts, blocked cards, exceptions, verification, and closure all emit), verification engine refactored to write evidence packets and audit events through the store, GET /api/audit/{violationId} audit-trail endpoint, audit_events columns prompt_run_id + evidence_packet with reversible migration 380983188d8c
+- Created:
+  - backend/app/domain/audit.py
+  - backend/app/repositories/audit_repo.py
+  - backend/app/api/audit.py
+  - backend/app/connectors/storage.py
+  - backend/migrations/versions/380983188d8c_audit_prompt_run_id_and_evidence_packet.py
+  - backend/tests/test_audit_store.py
+- Changed: backend/app/db/models.py (audit columns + append-only guard), backend/app/core/config.py (evidence_packets_dir), backend/app/agents/verification_engine.py (audit repo + packet store), backend/app/api/verification.py, backend/app/api/findings.py (pipeline audit emission), backend/app/api/approvals.py, backend/app/api/artifacts.py, .gitignore (evidence packets dir), IMPLEMENTATION_STATE.md, state.json
+- Result: POL-001 ingest produces finding.ingested/normalized/enriched, focused_agent.signals_detected, risk.scored, route.planned sharing one correlation ID; approval, artifact, blocked, exception, verification, and closure events all recorded; verification events carry a local:// evidence packet whose masked JSON holds before/after proof; secret-like keys (clientSecret, connectionString, sasToken, accessKey) masked in both audit payloads and packets; updates and deletes on audit rows raise AppendOnlyViolationError. ruff, mypy strict (68 files), pytest 138/138 pass.
+- Drawbacks:
+  - prompt_run_id reflects state.json currentPromptId at process start (lru_cache); long-running processes spanning prompt updates would need a cache clear
+  - Evidence packets are stored locally under data/evidence_packets (gitignored); Azure Blob implementation arrives with P16 deployment work
+  - Append-only is enforced at the application/session level; database-level immutability (permissions/immutable blobs) is a deployment concern for P16
+- Validation:
+  - [x] Every major decision has audit event (pipeline, approval, artifact, verification, closure, blocked, exception)
+  - [x] Audit includes prompt run ID (stamped from state.json on every event)
+  - [x] Secret masking test passes (payloads and evidence packets)
+  - [x] Audit is append-only at application level (update and delete both raise)
+- Next trigger phrase: `START P15 FRONTEND`

@@ -11,9 +11,17 @@ from app.core.security import Role, require_role
 from app.db.models import ApprovalRow, ViolationRow
 from app.db.session import get_db
 from app.domain.approval import ApprovalGateError
+from app.domain.audit import AuditEventType
 from app.domain.evidence_schema import CanonicalEvidence
 from app.repositories.approvals_repo import ApprovalsRepository
+from app.repositories.audit_repo import AuditRepository
 from app.repositories.violations_repo import ViolationsRepository
+
+_DECISION_EVENTS = {
+    "approve": AuditEventType.APPROVAL_APPROVED,
+    "reject": AuditEventType.APPROVAL_REJECTED,
+    "defer": AuditEventType.APPROVAL_DEFERRED,
+}
 
 router = APIRouter(prefix="/api")
 
@@ -75,6 +83,12 @@ def request_approval(
     row, evidence = _load(db, violation_id)
     gate = ApprovalGate(ApprovalsRepository(db), ViolationsRepository(db))
     approval = gate.request(evidence, row.raw_finding_id)
+    AuditRepository(db).add_event(
+        violation_id,
+        AuditEventType.APPROVAL_REQUESTED,
+        {"approverRole": approval.approver_role, "payload": approval.payload},
+        action_id=approval.id,
+    )
     db.flush()
     return _record(approval)
 
@@ -94,6 +108,12 @@ def decide_approval(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={"error": "approval_gate", "reason": exc.reason, "rule": exc.rule},
         ) from exc
+    AuditRepository(db).add_event(
+        violation_id,
+        _DECISION_EVENTS[body.decision],
+        {"approver": body.approver, "reason": body.reason},
+        action_id=approval.id,
+    )
     db.flush()
     return _record(approval)
 

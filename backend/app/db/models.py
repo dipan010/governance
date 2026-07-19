@@ -8,8 +8,11 @@ owned by Alembic migrations; local/test convenience uses create_all.
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import JSON, DateTime, ForeignKey, MetaData, String
+from sqlalchemy import JSON, DateTime, ForeignKey, MetaData, String, event
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import Session as OrmSession
+
+from app.domain.audit import AppendOnlyViolationError
 
 NAMING_CONVENTION = {
     "ix": "ix_%(column_0_label)s",
@@ -63,6 +66,8 @@ class AuditEventRow(Base):
     event_type: Mapped[str] = mapped_column(String(64), index=True)
     correlation_id: Mapped[str] = mapped_column(String(64), index=True)
     action_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    prompt_run_id: Mapped[str] = mapped_column(String(32), server_default="unknown")
+    evidence_packet: Mapped[str | None] = mapped_column(String(512), nullable=True)
     payload: Mapped[dict[str, Any]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
@@ -102,3 +107,20 @@ class ViolationRow(Base):
     missing_evidence: Mapped[list[str]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+@event.listens_for(OrmSession, "before_flush")
+def _audit_append_only_guard(
+    session: OrmSession, _flush_context: object, _instances: object
+) -> None:
+    """Audit events are append-only at the application level (RULES.md 9.9)."""
+    for obj in session.dirty:
+        if isinstance(obj, AuditEventRow) and session.is_modified(obj):
+            raise AppendOnlyViolationError(
+                "audit_events is append-only; updates are not permitted"
+            )
+    for obj in session.deleted:
+        if isinstance(obj, AuditEventRow):
+            raise AppendOnlyViolationError(
+                "audit_events is append-only; deletes are not permitted"
+            )

@@ -23,10 +23,12 @@ from app.core.security import Role, require_role
 from app.db.models import ArtifactRow, ViolationRow
 from app.db.session import get_db
 from app.domain.approval import ActionKind, ApprovalGateError
+from app.domain.audit import AuditEventType
 from app.domain.enums import ActionStatus
 from app.domain.evidence_schema import CanonicalEvidence
 from app.domain.routing import ExceptionRequest
 from app.repositories.approvals_repo import ApprovalsRepository
+from app.repositories.audit_repo import AuditRepository
 from app.repositories.violations_repo import ViolationsRepository
 
 router = APIRouter(prefix="/api")
@@ -199,6 +201,31 @@ def create_artifacts(
             )
         )
         _record_on_evidence(evidence, kind, artifact.artifact_id)
+        audit = AuditRepository(db)
+        audit.add_event(
+            violation_id,
+            AuditEventType.ARTIFACT_GENERATED,
+            {"kind": kind.value, "title": artifact.title},
+            action_id=artifact.artifact_id,
+        )
+        if kind is ActionKind.BLOCKED_CARD:
+            audit.add_event(
+                violation_id,
+                AuditEventType.VIOLATION_BLOCKED,
+                {"blockers": [b.value for b in evidence.decision.blockers]},
+                action_id=artifact.artifact_id,
+            )
+        elif kind is ActionKind.EXCEPTION_REQUEST and exception is not None:
+            audit.add_event(
+                violation_id,
+                AuditEventType.EXCEPTION_CREATED,
+                {
+                    "owner": exception.owner,
+                    "expiry": str(exception.expiry),
+                    "compensatingControl": exception.compensating_control,
+                },
+                action_id=artifact.artifact_id,
+            )
         responses.append(_response(artifact))
 
     ViolationsRepository(db).upsert_violation(evidence, row.raw_finding_id)

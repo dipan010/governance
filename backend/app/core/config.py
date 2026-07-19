@@ -14,6 +14,7 @@ APP_NAME = "policy-compliance-drift-agent"
 APP_VERSION = "0.1.0"
 
 DEFAULT_FIXTURES_DIR = Path(__file__).resolve().parents[3] / "data" / "fixtures"
+DEFAULT_EVIDENCE_DIR = Path(__file__).resolve().parents[3] / "data" / "evidence_packets"
 
 
 class Settings(BaseSettings):
@@ -26,6 +27,7 @@ class Settings(BaseSettings):
     key_vault_uri: str | None = None
     log_level: str = "INFO"
     fixtures_dir: Path = DEFAULT_FIXTURES_DIR
+    evidence_packets_dir: Path = DEFAULT_EVIDENCE_DIR
 
 
 @lru_cache

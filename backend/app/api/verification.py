@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
 
 from app.agents.verification_engine import VerificationEngine
+from app.connectors.storage import LocalEvidencePacketStore
 from app.connectors.verification_source import FixtureVerificationSource
 from app.core.config import get_settings
 from app.core.security import Role, require_role
@@ -15,6 +16,7 @@ from app.db.models import ViolationRow
 from app.db.session import get_db
 from app.domain.evidence_schema import CanonicalEvidence
 from app.domain.verification import ClosureBlockedError, VerificationOutcome
+from app.repositories.audit_repo import AuditRepository
 from app.repositories.violations_repo import ViolationsRepository
 
 router = APIRouter(prefix="/api")
@@ -28,6 +30,14 @@ VerifierRole = Annotated[
 @lru_cache
 def get_verification_source() -> FixtureVerificationSource:
     return FixtureVerificationSource(get_settings().fixtures_dir)
+
+
+def _engine(db: Session) -> VerificationEngine:
+    return VerificationEngine(
+        get_verification_source(),
+        AuditRepository(db),
+        LocalEvidencePacketStore(get_settings().evidence_packets_dir),
+    )
 
 
 class VerifyRequest(BaseModel):
@@ -86,7 +96,7 @@ def verify_violation(
     body: VerifyRequest | None = None,
 ) -> VerifyResponse:
     row, evidence = _load(db, violation_id)
-    engine = VerificationEngine(get_verification_source(), db)
+    engine = _engine(db)
     outcome = engine.verify(
         evidence, after_state_override=body.after_state if body else None
     )
@@ -100,7 +110,7 @@ def close_violation(
     violation_id: str, db: DbSession, _role: VerifierRole
 ) -> dict[str, str]:
     row, evidence = _load(db, violation_id)
-    engine = VerificationEngine(get_verification_source(), db)
+    engine = _engine(db)
     try:
         engine.close(evidence)
     except ClosureBlockedError as exc:

@@ -10,3 +10,4 @@ dist/
 .env
 local.db
 *.db
+data/evidence_packets/

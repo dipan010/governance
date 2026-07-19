@@ -26,12 +26,14 @@ from app.connectors.verification_source import FixtureVerificationSource
 from app.core.config import get_settings
 from app.core.security import Role, require_role
 from app.db.session import get_db
+from app.domain.audit import AuditEventType
 from app.domain.enums import Severity, coerce_enum
 from app.domain.evidence_schema import CanonicalEvidence
 from app.domain.focused_signals import merge_signals
 from app.domain.scoring import severity_rank
 from app.domain.validation import IssueSeverity, ValidationIssue
 from app.repositories.approvals_repo import ApprovalsRepository
+from app.repositories.audit_repo import AuditRepository
 from app.repositories.violations_repo import ViolationsRepository
 
 
@@ -123,6 +125,69 @@ class ViolationDetail(BaseModel):
     approvals: list[dict[str, Any]] = Field(default_factory=list)
 
 
+def _emit_pipeline_audit(
+    audit: AuditRepository,
+    evidence: CanonicalEvidence,
+    source: str,
+    ingest_id: str,
+) -> None:
+    """Every pipeline decision leaves an audit event, correlated by ingest."""
+    vid = evidence.violation_id
+    decision = evidence.decision
+    audit.add_event(
+        vid,
+        AuditEventType.FINDING_INGESTED,
+        {"source": source, "ingestId": ingest_id},
+        correlation_id=ingest_id,
+    )
+    audit.add_event(
+        vid,
+        AuditEventType.FINDING_NORMALIZED,
+        {"missingEvidence": evidence.missing_evidence},
+        correlation_id=ingest_id,
+    )
+    audit.add_event(
+        vid,
+        AuditEventType.FINDING_ENRICHED,
+        {
+            "ownerTeam": evidence.ownership.owner_team,
+            "ownerConfidence": evidence.ownership.owner_confidence.value,
+            "environment": evidence.resource_facts.environment.value,
+            "sourceDriftLikely": evidence.history.source_drift_likely,
+        },
+        correlation_id=ingest_id,
+    )
+    if evidence.risk_signals.focused_signals:
+        audit.add_event(
+            vid,
+            AuditEventType.SIGNALS_DETECTED,
+            {"signals": [s.value for s in evidence.risk_signals.focused_signals]},
+            correlation_id=ingest_id,
+        )
+    audit.add_event(
+        vid,
+        AuditEventType.RISK_SCORED,
+        {
+            "riskScore": decision.risk_score,
+            "riskBand": decision.risk_band.value if decision.risk_band else None,
+            "ruleVersion": decision.score_rule_version,
+        },
+        correlation_id=ingest_id,
+    )
+    audit.add_event(
+        vid,
+        AuditEventType.ROUTE_PLANNED,
+        {
+            "route": (
+                decision.recommended_path.value if decision.recommended_path else None
+            ),
+            "blockers": [b.value for b in decision.blockers],
+            "ruleVersion": decision.route_rule_version,
+        },
+        correlation_id=ingest_id,
+    )
+
+
 def _ingest(
     body: IngestRequest,
     db: Session,
@@ -160,6 +225,9 @@ def _ingest(
         ScorerAgent().score(normalized.evidence)
         RoutingPlanner().route(normalized.evidence)
         repo.upsert_violation(normalized.evidence, raw_id)
+        _emit_pipeline_audit(
+            AuditRepository(db), normalized.evidence, source, ingest_id
+        )
         results.append(
             RecordResult(
                 violation_id=normalized.evidence.violation_id,
