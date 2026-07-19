@@ -2,7 +2,7 @@
   "project": "policy-compliance-drift-detection-agent",
   "schemaVersion": "1.0.0",
   "lastUpdatedAt": "2026-07-19T00:00:00+05:30",
-  "currentPromptId": "P12",
+  "currentPromptId": "P13",
   "currentStatus": "Implemented",
   "promptRuns": [
     {
@@ -515,6 +515,45 @@
         "Blocked path states rule and safe alternative"
       ],
       "nextTriggerPhrase": "START P13 VERIFICATION"
+    },
+    {
+      "promptId": "P13",
+      "status": "Implemented",
+      "startedAt": "2026-07-19T00:00:00+05:30",
+      "finishedAt": "2026-07-19T00:00:00+05:30",
+      "implemented": [
+        "pure verification rules: clause parsing, case-insensitive comparison, NotRun/Failed/Compliant with next actions",
+        "ensure_closable guard: closure requires Compliant result plus stored after-state",
+        "VerificationEngine: fixture after-state default, override to simulate live re-query, Verified status, audit events with correlation IDs",
+        "audit_events table with reversible migration (P14 formalizes the store)",
+        "POST /api/violations/{id}/verify and /close with 409 closure_blocked"
+      ],
+      "created": [
+        "backend/app/domain/verification.py",
+        "backend/app/agents/verification_engine.py",
+        "backend/app/api/verification.py",
+        "backend/migrations/versions/3a10f3efc10d_audit_events_table.py",
+        "backend/tests/test_verification_engine.py"
+      ],
+      "changed": [
+        "backend/app/db/models.py",
+        "backend/app/main.py",
+        "IMPLEMENTATION_STATE.md",
+        "state.json"
+      ],
+      "result": "POL-001 Enabled->Disabled verification passes and closes only after proof (live verified); failed/NotRun paths keep items open with next actions; 128/128 tests pass",
+      "drawbacks": [
+        "Prose expected values (POL-002/004/005) route to manual verification by design",
+        "audit_events table introduced ahead of P14 formal store",
+        "POST /close added beyond runbook API list to prove closure enforcement"
+      ],
+      "validation": [
+        "POL-001 before Enabled after Disabled",
+        "POL-001 closes only after successful verification",
+        "Failed verification keeps item open with next action",
+        "Ticket/PR creation alone does not close item"
+      ],
+      "nextTriggerPhrase": "START P14 AUDIT STORE"
     }
   ]
 }

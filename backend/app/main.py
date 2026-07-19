@@ -11,6 +11,7 @@ from app.api.findings import router as findings_router
 from app.api.health import router as health_router
 from app.api.routes import router as routes_router
 from app.api.scoring import router as scoring_router
+from app.api.verification import router as verification_router
 from app.core.config import APP_NAME, APP_VERSION, get_settings
 from app.core.logging import configure_logging
 from app.db.models import Base
@@ -34,6 +35,7 @@ def create_app() -> FastAPI:
     app.include_router(routes_router)
     app.include_router(approvals_router)
     app.include_router(artifacts_router)
+    app.include_router(verification_router)
     return app
 
 

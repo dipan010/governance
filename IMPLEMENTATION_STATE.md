@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P12
+Current prompt: P13
 Current status: Implemented
 Last updated: 2026-07-19
-Next trigger phrase: `START P13 VERIFICATION`
+Next trigger phrase: `START P14 AUDIT STORE`
 
 ---
 
@@ -304,3 +304,26 @@ Next trigger phrase: `START P13 VERIFICATION`
   - [x] No real external write happens by default (all drafts; prUrl null; no external connectors invoked)
   - [x] Blocked path clearly states rule and safe alternative (rule citation + alternative per blocker)
 - Next trigger phrase: `START P13 VERIFICATION`
+
+## P13 — Verification engine
+
+- Status: Implemented
+- Implemented: pure verification rules (clause parser for "prop == value" expressions, case-insensitive comparison, NotRun when no after-state, Failed with mismatch details and mandatory next action, prose-only expectations require manual verification and never auto-pass), ensure_closable closure guard (Compliant result plus stored after-state required; ticket/PR creation alone never satisfies), VerificationEngine agent (fixture after-state by default, afterState override to simulate a live re-query, sets Verified status on success, downgrades a previously Closed item to VerificationPending if a re-check fails, writes verification.completed and violation.closed audit events with correlation IDs), audit_events table with reversible migration 3a10f3efc10d (P14 formalizes the store around it), POST /api/violations/{id}/verify and POST /api/violations/{id}/close (409 closure_blocked with nextAction)
+- Created:
+  - backend/app/domain/verification.py
+  - backend/app/agents/verification_engine.py
+  - backend/app/api/verification.py
+  - backend/migrations/versions/3a10f3efc10d_audit_events_table.py
+  - backend/tests/test_verification_engine.py
+- Changed: backend/app/db/models.py (AuditEventRow), backend/app/main.py (verification router), IMPLEMENTATION_STATE.md, state.json
+- Result: Live verified — close before verify returns 409 ("closure requires after-state proof"); verify shows before publicNetworkAccess Enabled → after Disabled, result Compliant, status Verified with an audit event; close then succeeds (Closed with violation.closed audit event). Simulated failed after-state keeps the item open with a concrete next action; POL-002 (no after-state) is NotRun and unclosable; artifact creation leaves status ArtifactCreated and closure still blocked. ruff, mypy strict (63 files), pytest 128/128 pass.
+- Drawbacks:
+  - POL-002/004/005 expected values are prose, so their machine verification path is manual-verification-required by design (fixture limitation, safe default)
+  - audit_events table introduced here ahead of P14's formal audit store (domain, repo, API, masking arrive at P14)
+  - POST /close endpoint added beyond the runbook's API list to make closure enforcement provable
+- Validation:
+  - [x] POL-001 shows before publicNetworkAccess Enabled and after Disabled
+  - [x] POL-001 closes only after successful verification (409 before, 200 after)
+  - [x] Failed verification keeps item open and returns next action
+  - [x] Ticket/PR creation alone does not close item (ArtifactCreated ≠ Closed; close still 409)
+- Next trigger phrase: `START P14 AUDIT STORE`

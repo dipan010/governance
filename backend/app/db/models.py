@@ -52,6 +52,21 @@ class ApprovalRow(Base):
     )
 
 
+class AuditEventRow(Base):
+    """Append-only audit events. Formalized by the audit store (P14);
+    the verification engine already writes verified-fix events."""
+
+    __tablename__ = "audit_events"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    violation_id: Mapped[str] = mapped_column(String(64), index=True)
+    event_type: Mapped[str] = mapped_column(String(64), index=True)
+    correlation_id: Mapped[str] = mapped_column(String(64), index=True)
+    action_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
 class ArtifactRow(Base):
     __tablename__ = "action_artifacts"
 
