@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P16
+Current prompt: P17
 Current status: Implemented
-Last updated: 2026-07-19
-Next trigger phrase: `START P17 TEST AND QUALITY`
+Last updated: 2026-07-20
+Next trigger phrase: `START P18 DEMO VALIDATION`
 
 ---
 
@@ -401,3 +401,26 @@ Next trigger phrase: `START P17 TEST AND QUALITY`
   - [x] Permissions doc lists scopes and roles (runtime, CI, human roles, and an explicit not-granted list)
   - [x] Deployment is dry-run or dev-only unless approved (environment allowlist = dev; what-if-first documented)
 - Next trigger phrase: `START P17 TEST AND QUALITY`
+
+## P17 — Test and quality gates
+
+- Status: Implemented
+- Implemented: gap-filling tests (dashboard summary API with full-flow counts and empty-state; state tracker consistency test asserting state.json validity, currentPromptId == latest run, all required per-run fields, and IMPLEMENTATION_STATE.md sections for every prompt), acceptance script scripts/validate_acceptance.py booting the real app against a throwaway database and proving AC-1..AC-9 end to end with a printed PASS/FAIL matrix and non-zero exit on failure, docs/TESTING.md (command table, backend/frontend test inventories, security-focused test list, known gaps), root Makefile aggregating backend-lint/backend-typecheck/backend-test/frontend-lint/frontend-typecheck/frontend-test/build/acceptance/all
+- Created:
+  - backend/tests/test_dashboard.py
+  - backend/tests/test_state_tracker.py
+  - scripts/validate_acceptance.py
+  - docs/TESTING.md
+  - Makefile (repo root)
+- Changed: IMPLEMENTATION_STATE.md, state.json
+- Result: Acceptance script proves all nine criteria (9/9 PASS): five findings ingested; storage+NSG signals; score/owner-or-gap/route/verification-query on every record; raw [POL-002 first] vs ranked [POL-001 first] orders differ; ticket for POL-002; PR/comment preview with source fix for POL-001; POL-003 dry-run 403 before approval and generated after; POL-005 blocked card citing the missing-owner rule; POL-001 before Enabled / after Disabled with proof-gated closure and a stored evidence packet. Full gate pack green: backend ruff + mypy strict (71 files) + pytest 143/143; frontend eslint + tsc + vitest 9/9 + build.
+- Drawbacks:
+  - Dependency vulnerability scanning (pip-audit/npm audit) not wired into CI (documented in TESTING.md)
+  - Bicep compilation not in CI (needs bicep CLI step)
+  - Acceptance script asserts against fixture-specific IDs (POL-001..005) by design — it validates the demo dataset, not arbitrary data
+- Validation:
+  - [x] Acceptance script proves five findings, two focused agents, ticket, PR/comment, dry-run, blocked path, verification (9/9 PASS)
+  - [x] All pure decision logic has tests (schema, normalizer, enrichment, both focused agents, scorer, routing, approval, artifacts, verification, audit, masking, state tracker)
+  - [x] Security masking test passes (audit payloads, evidence packets, connector leak check)
+  - [x] Failing gates: none; remaining gaps recorded as drawbacks
+- Next trigger phrase: `START P18 DEMO VALIDATION`

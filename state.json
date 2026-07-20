@@ -2,7 +2,7 @@
   "project": "policy-compliance-drift-detection-agent",
   "schemaVersion": "1.0.0",
   "lastUpdatedAt": "2026-07-19T00:00:00+05:30",
-  "currentPromptId": "P16",
+  "currentPromptId": "P17",
   "currentStatus": "Implemented",
   "promptRuns": [
     {
@@ -680,6 +680,43 @@
         "Deployment dry-run or dev-only unless approved"
       ],
       "nextTriggerPhrase": "START P17 TEST AND QUALITY"
+    },
+    {
+      "promptId": "P17",
+      "status": "Implemented",
+      "startedAt": "2026-07-20T00:00:00+05:30",
+      "finishedAt": "2026-07-20T00:00:00+05:30",
+      "implemented": [
+        "dashboard summary API tests (full-flow counts and empty state)",
+        "state tracker consistency tests (state.json validity, per-run required fields, markdown sections)",
+        "acceptance script proving AC-1..AC-9 end to end with PASS/FAIL matrix",
+        "docs/TESTING.md with command table, test inventories, security tests, known gaps",
+        "root Makefile aggregating all quality gates"
+      ],
+      "created": [
+        "backend/tests/test_dashboard.py",
+        "backend/tests/test_state_tracker.py",
+        "scripts/validate_acceptance.py",
+        "docs/TESTING.md",
+        "Makefile"
+      ],
+      "changed": [
+        "IMPLEMENTATION_STATE.md",
+        "state.json"
+      ],
+      "result": "Acceptance 9/9 PASS; backend ruff + mypy strict + pytest 143/143; frontend eslint + tsc + vitest 9/9 + build — all green",
+      "drawbacks": [
+        "Dependency vulnerability scanning not in CI",
+        "Bicep compilation not in CI",
+        "Acceptance script validates the fixture demo dataset by design"
+      ],
+      "validation": [
+        "Acceptance script proves all MVP criteria",
+        "All pure decision logic has tests",
+        "Security masking tests pass",
+        "No failing gates; gaps recorded as drawbacks"
+      ],
+      "nextTriggerPhrase": "START P18 DEMO VALIDATION"
     }
   ]
 }
