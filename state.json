@@ -2,7 +2,7 @@
   "project": "policy-compliance-drift-detection-agent",
   "schemaVersion": "1.0.0",
   "lastUpdatedAt": "2026-07-19T00:00:00+05:30",
-  "currentPromptId": "P14",
+  "currentPromptId": "P15",
   "currentStatus": "Implemented",
   "promptRuns": [
     {
@@ -602,6 +602,46 @@
         "Audit is append-only at application level"
       ],
       "nextTriggerPhrase": "START P15 FRONTEND"
+    },
+    {
+      "promptId": "P15",
+      "status": "Implemented",
+      "startedAt": "2026-07-19T00:00:00+05:30",
+      "finishedAt": "2026-07-19T00:00:00+05:30",
+      "implemented": [
+        "Vite + React 18 + TypeScript strict frontend with typed API client",
+        "ComplianceSummary over new GET /api/dashboard/summary (nine metrics)",
+        "Worklist with raw vs ranked toggle and all eleven required filters",
+        "FindingCard hero: ScoreBreakdown, RouteView, ApprovalPanel, SourceFixPanel, VerificationPanel, AuditTimeline",
+        "action buttons disabled without approval or verification proof",
+        "backend worklist summaries extended with filter fields",
+        "vitest + testing-library suite: 9 tests incl. critical and blocked cards"
+      ],
+      "created": [
+        "frontend/ (package.json, vite config, eslint, index.html, src app + api + 9 components + tests)",
+        "backend/app/api/dashboard.py"
+      ],
+      "changed": [
+        "backend/app/api/findings.py",
+        "backend/app/main.py",
+        "IMPLEMENTATION_STATE.md",
+        "state.json"
+      ],
+      "result": "Frontend typecheck/lint/test/build all pass (9/9 tests); backend stays green (138/138); live dashboard summary and filterable worklist verified",
+      "drawbacks": [
+        "Dashboard endpoint tests deferred to P17",
+        "Approver is free-text until P16 auth",
+        "fetch-based loading instead of TanStack Query",
+        "Exception-request form not in UI (API supports it)"
+      ],
+      "validation": [
+        "Summary metrics render",
+        "Worklist toggles raw severity vs agent ranking",
+        "POL-001 card shows PR/comment and ticket route",
+        "POL-005 card shows blocked route",
+        "Action button disabled without approval"
+      ],
+      "nextTriggerPhrase": "START P16 CI CD AND AZURE"
     }
   ]
 }

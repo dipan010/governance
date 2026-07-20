@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P14
+Current prompt: P15
 Current status: Implemented
 Last updated: 2026-07-19
-Next trigger phrase: `START P15 FRONTEND`
+Next trigger phrase: `START P16 CI CD AND AZURE`
 
 ---
 
@@ -351,3 +351,29 @@ Next trigger phrase: `START P15 FRONTEND`
   - [x] Secret masking test passes (payloads and evidence packets)
   - [x] Audit is append-only at application level (update and delete both raise)
 - Next trigger phrase: `START P15 FRONTEND`
+
+## P15 — React dashboard and finding cards
+
+- Status: Implemented
+- Implemented: Vite + React 18 + TypeScript strict frontend with typed API client (all backend contracts mirrored in src/api/types.ts); ComplianceSummary rendering the nine spec metrics from the new GET /api/dashboard/summary; Worklist with raw-severity vs agent-ranked toggle, all eleven required filters (policy, severity, exposure, data classification, owner, app, source drift, route, confidence, status, blocker), and blockers shown as first-class column; FindingCard hero composing ScoreBreakdown (score + factors + actionability + blockers + rule versions), RouteView (route, approval requirement, next action, verification query, artifact generation button disabled without approval, artifact previews), ApprovalPanel (request/approve/reject/defer with reason required to reject, payload visible), SourceFixPanel (repo/file/CODEOWNER, temporary-runtime-patch warning), VerificationPanel (before/after states, run verification, close disabled until Compliant), AuditTimeline (event type, prompt run, action ID, evidence packet); backend worklist summaries extended with route/owner/exposure/classification/drift/confidence fields to power filters; vitest + testing-library suite covering summary metrics, sort toggle, blocker filtering, all filters present, POL-001 route + disabled/enabled artifact button, closure disabled without proof, POL-005 blocked card with owner gap
+- Created:
+  - frontend/package.json, tsconfig.json, vite.config.ts, eslint.config.js, index.html
+  - frontend/src/main.tsx, App.tsx, styles.css
+  - frontend/src/api/types.ts, client.ts
+  - frontend/src/components/{ComplianceSummary,Worklist,FindingCard,ScoreBreakdown,RouteView,ApprovalPanel,SourceFixPanel,VerificationPanel,AuditTimeline}.tsx
+  - frontend/src/test/{setup.ts,fixtures.ts,components.test.tsx}
+  - backend/app/api/dashboard.py (GET /api/dashboard/summary)
+- Changed: backend/app/api/findings.py (worklist summary fields for filters), backend/app/main.py (dashboard router), IMPLEMENTATION_STATE.md, state.json
+- Result: Frontend typecheck (tsc strict), eslint, vitest 9/9, and production build all pass; backend remains green (ruff, mypy strict 69 files, pytest 138/138). Live: dashboard summary returns the nine metrics (blockedUnsafeActions=1, verifiedFixes=1 after exercising POL-005 and POL-001) and worklist rows carry route/owner/drift/exposure for filtering. Dev server proxies /api to the backend on :8000.
+- Drawbacks:
+  - No dedicated dashboard API tests yet (endpoint covered indirectly; P17 hardens)
+  - Approver identity is a free-text input in the UI, matching the P11 auth stub until P16
+  - Plain fetch-based data loading instead of TanStack Query (acceptable for the demo scale; rules list it as preferred, not mandatory)
+  - Route artifacts for the exception path require the API's exceptionRequest body; the UI generates default route artifacts only (exception form is a stretch item)
+- Validation:
+  - [x] Summary metrics render (ComplianceSummary test + live endpoint)
+  - [x] Worklist can toggle raw severity and agent ranking (toggle test; server-side sort param)
+  - [x] POL-001 card shows PR/comment and ticket route ("Source PR/comment plus change ticket")
+  - [x] POL-005 card shows blocked route (blocked_manual_review with owner gap and blockers)
+  - [x] Action button is disabled without approval (disabled test, enabled-after-approval test, closure disabled without proof)
+- Next trigger phrase: `START P16 CI CD AND AZURE`

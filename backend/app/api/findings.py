@@ -113,6 +113,15 @@ class ViolationSummary(BaseModel):
     risk_band: str | None = Field(alias="riskBand", default=None)
     blockers: list[str] = Field(default_factory=list)
     actionability_score: int | None = Field(alias="actionabilityScore", default=None)
+    route: str | None = None
+    policy_name: str | None = Field(alias="policyName", default=None)
+    environment: str | None = None
+    exposure: str | None = None
+    data_classification: str | None = Field(alias="dataClassification", default=None)
+    owner_team: str | None = Field(alias="ownerTeam", default=None)
+    owner_confidence: str | None = Field(alias="ownerConfidence", default=None)
+    business_app: str | None = Field(alias="businessApp", default=None)
+    source_drift_likely: bool | None = Field(alias="sourceDriftLikely", default=None)
 
 
 class ViolationDetail(BaseModel):
@@ -268,7 +277,17 @@ def list_violations(
     repo = ViolationsRepository(db)
     summaries = []
     for row in repo.list_violations():
-        decision = row.evidence.get("decision", {})
+        evidence = row.evidence
+        decision = evidence.get("decision", {})
+        signals = evidence.get("riskSignals", {})
+        ownership = evidence.get("ownership", {})
+        internet = signals.get("internetExposure")
+        if internet is True:
+            exposure = "internet exposed"
+        elif internet is False:
+            exposure = "private only"
+        else:
+            exposure = "unknown"
         summaries.append(
             ViolationSummary(
                 violation_id=row.violation_id,
@@ -282,6 +301,17 @@ def list_violations(
                 risk_band=decision.get("riskBand"),
                 blockers=decision.get("blockers", []),
                 actionability_score=decision.get("actionabilityScore"),
+                route=decision.get("recommendedPath"),
+                policy_name=evidence.get("policyEvidence", {}).get("policyName"),
+                environment=evidence.get("resourceFacts", {}).get("environment"),
+                exposure=exposure,
+                data_classification=signals.get("dataClassification"),
+                owner_team=ownership.get("ownerTeam"),
+                owner_confidence=ownership.get("ownerConfidence"),
+                business_app=ownership.get("businessApp"),
+                source_drift_likely=evidence.get("history", {}).get(
+                    "sourceDriftLikely"
+                ),
             )
         )
 

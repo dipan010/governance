@@ -11,3 +11,5 @@ dist/
 local.db
 *.db
 data/evidence_packets/
+node_modules/
+frontend/dist/
