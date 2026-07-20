@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P15
+Current prompt: P16
 Current status: Implemented
 Last updated: 2026-07-19
-Next trigger phrase: `START P16 CI CD AND AZURE`
+Next trigger phrase: `START P17 TEST AND QUALITY`
 
 ---
 
@@ -377,3 +377,27 @@ Next trigger phrase: `START P16 CI CD AND AZURE`
   - [x] POL-005 card shows blocked route (blocked_manual_review with owner gap and blockers)
   - [x] Action button is disabled without approval (disabled test, enabled-after-approval test, closure disabled without proof)
 - Next trigger phrase: `START P16 CI CD AND AZURE`
+
+## P16 — CI/CD and Azure environment
+
+- Status: Implemented
+- Implemented: GitHub Actions backend CI (ruff format+lint, mypy strict, pytest, migration up/down/up reversibility check on Python 3.12) and frontend CI (npm ci, eslint, tsc, vitest, build on Node 22), both with contents:read only; Bicep environment under infra/bicep with modules for monitoring (Log Analytics + App Insights), Key Vault (RBAC authorization, soft delete + purge protection — practices the POL-003 policy), Storage (evidence-packets container, no public blobs, default deny, TLS 1.2 — practices the POL-001 policy), PostgreSQL Flexible Server (Entra-only auth, password auth disabled), App Service backend with system-assigned managed identity reading database-url via a Key Vault reference, Static Web App frontend, and resource-scoped role assignments (Key Vault Secrets User + Storage Blob Data Contributor only); environment parameter allowlist rejects anything but dev; docs/AZURE_DEPLOYMENT.md (what-if-first workflow, OIDC federated credentials, approval gates) and docs/PERMISSIONS.md (runtime/CI/human role tables, explicit not-granted list, data-plane restrictions)
+- Created:
+  - .github/workflows/backend-ci.yml
+  - .github/workflows/frontend-ci.yml
+  - infra/bicep/main.bicep
+  - infra/bicep/modules/{monitoring,keyvault,storage,postgres,appservice,staticweb,roles}.bicep
+  - docs/AZURE_DEPLOYMENT.md
+  - docs/PERMISSIONS.md
+- Changed: IMPLEMENTATION_STATE.md, state.json
+- Result: Both workflow files parse and contain the full lint/typecheck/test/build job sets (verified with YAML load); a repo-wide scan finds no committed secret-like literals — the only secret (database-url) is a Key Vault reference resolved via managed identity; runtime identity gets no resource write permissions beyond blob data (the agent proposes, never applies); deployment is dev-only with the template rejecting other environments and what-if documented as the default mode.
+- Drawbacks:
+  - az/bicep CLI unavailable in this environment, so Bicep files are hand-validated but not compiled; first `az deployment group what-if` run should confirm them
+  - No deploy job in CI yet by design — adding one requires the documented GitHub environment protection and OIDC setup (an approval-gated change)
+  - Live-connector settings (Key Vault URI, DefaultAzureCredential wiring) are documented but the app still runs on fixtures until live connectors are approved
+- Validation:
+  - [x] Lint/test jobs exist (backend: format/lint/mypy/pytest/migrations; frontend: lint/typecheck/test/build)
+  - [x] Secrets are referenced from Key Vault, not committed (KV reference + secret-literal scan clean)
+  - [x] Permissions doc lists scopes and roles (runtime, CI, human roles, and an explicit not-granted list)
+  - [x] Deployment is dry-run or dev-only unless approved (environment allowlist = dev; what-if-first documented)
+- Next trigger phrase: `START P17 TEST AND QUALITY`

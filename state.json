@@ -2,7 +2,7 @@
   "project": "policy-compliance-drift-detection-agent",
   "schemaVersion": "1.0.0",
   "lastUpdatedAt": "2026-07-19T00:00:00+05:30",
-  "currentPromptId": "P15",
+  "currentPromptId": "P16",
   "currentStatus": "Implemented",
   "promptRuns": [
     {
@@ -642,6 +642,44 @@
         "Action button disabled without approval"
       ],
       "nextTriggerPhrase": "START P16 CI CD AND AZURE"
+    },
+    {
+      "promptId": "P16",
+      "status": "Implemented",
+      "startedAt": "2026-07-19T00:00:00+05:30",
+      "finishedAt": "2026-07-19T00:00:00+05:30",
+      "implemented": [
+        "backend CI: ruff, mypy strict, pytest, migration reversibility on Python 3.12",
+        "frontend CI: eslint, tsc, vitest, build on Node 22",
+        "Bicep: monitoring, Key Vault (RBAC, purge protection), Storage (no public blobs, default deny), PostgreSQL (Entra-only auth), App Service with managed identity + KV reference, Static Web App, resource-scoped roles",
+        "environment allowlist rejects non-dev deployments",
+        "AZURE_DEPLOYMENT.md with what-if-first and OIDC; PERMISSIONS.md with least-privilege tables"
+      ],
+      "created": [
+        ".github/workflows/backend-ci.yml",
+        ".github/workflows/frontend-ci.yml",
+        "infra/bicep/main.bicep",
+        "infra/bicep/modules/ (7 modules)",
+        "docs/AZURE_DEPLOYMENT.md",
+        "docs/PERMISSIONS.md"
+      ],
+      "changed": [
+        "IMPLEMENTATION_STATE.md",
+        "state.json"
+      ],
+      "result": "Workflows parse with full job sets; no committed secrets (KV references only); runtime identity has no write beyond blob data; deployment dev-only with what-if default",
+      "drawbacks": [
+        "Bicep hand-validated; az/bicep CLI unavailable locally to compile",
+        "No CI deploy job by design (requires approval-gated GitHub environment + OIDC)",
+        "App runs on fixtures until live connectors are approved"
+      ],
+      "validation": [
+        "Lint/test jobs exist in both workflows",
+        "Secrets from Key Vault, not committed",
+        "Permissions doc lists scopes and roles",
+        "Deployment dry-run or dev-only unless approved"
+      ],
+      "nextTriggerPhrase": "START P17 TEST AND QUALITY"
     }
   ]
 }
