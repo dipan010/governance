@@ -1,0 +1,182 @@
+[
+  {
+    "eventId": "dbac53c2d6b04b2d81afebe58995d1f5",
+    "violationId": "POL-001",
+    "eventType": "finding.ingested",
+    "correlationId": "f9019eb865384302b89ea260a64626da",
+    "actionId": null,
+    "promptRunId": "P17",
+    "evidencePacket": null,
+    "payload": {
+      "source": "policy",
+      "ingestId": "f9019eb865384302b89ea260a64626da"
+    },
+    "createdAt": "2026-07-20T10:12:46.536191"
+  },
+  {
+    "eventId": "e8bafacc82cc42c5b8f770292aa140c3",
+    "violationId": "POL-001",
+    "eventType": "finding.normalized",
+    "correlationId": "f9019eb865384302b89ea260a64626da",
+    "actionId": null,
+    "promptRunId": "P17",
+    "evidencePacket": null,
+    "payload": {
+      "missingEvidence": []
+    },
+    "createdAt": "2026-07-20T10:12:46.536310"
+  },
+  {
+    "eventId": "e856fe4d924b43919071f6158c67931a",
+    "violationId": "POL-001",
+    "eventType": "finding.enriched",
+    "correlationId": "f9019eb865384302b89ea260a64626da",
+    "actionId": null,
+    "promptRunId": "P17",
+    "evidencePacket": null,
+    "payload": {
+      "ownerTeam": "Payments Platform",
+      "ownerConfidence": "High",
+      "environment": "Production",
+      "sourceDriftLikely": true
+    },
+    "createdAt": "2026-07-20T10:12:46.536363"
+  },
+  {
+    "eventId": "2eb3a2244f4c4148a48a2aaff10f061d",
+    "violationId": "POL-001",
+    "eventType": "focused_agent.signals_detected",
+    "correlationId": "f9019eb865384302b89ea260a64626da",
+    "actionId": null,
+    "promptRunId": "P17",
+    "evidencePacket": null,
+    "payload": {
+      "signals": [
+        "storage_public_network_access",
+        "storage_firewall_default_allow",
+        "private_endpoint_gap",
+        "source_drift_likely"
+      ]
+    },
+    "createdAt": "2026-07-20T10:12:46.536407"
+  },
+  {
+    "eventId": "7217b5eec3914e57bc0fe880a0a0ed48",
+    "violationId": "POL-001",
+    "eventType": "risk.scored",
+    "correlationId": "f9019eb865384302b89ea260a64626da",
+    "actionId": null,
+    "promptRunId": "P17",
+    "evidencePacket": null,
+    "payload": {
+      "riskScore": 100,
+      "riskBand": "Critical",
+      "ruleVersion": "risk-1.0.0"
+    },
+    "createdAt": "2026-07-20T10:12:46.536448"
+  },
+  {
+    "eventId": "19ecf92bb0544fadb50d4e8626aa1aef",
+    "violationId": "POL-001",
+    "eventType": "route.planned",
+    "correlationId": "f9019eb865384302b89ea260a64626da",
+    "actionId": null,
+    "promptRunId": "P17",
+    "evidencePacket": null,
+    "payload": {
+      "route": "source_pr_plus_change_ticket",
+      "blockers": [
+        "unknown_downtime_risk",
+        "missing_permission_check",
+        "production_runtime_change"
+      ],
+      "ruleVersion": "route-1.0.0"
+    },
+    "createdAt": "2026-07-20T10:12:46.536488"
+  },
+  {
+    "eventId": "5e62c5f6dbde4284ab4cd11945e505b4",
+    "violationId": "POL-001",
+    "eventType": "artifact.generated",
+    "correlationId": "1eba81b833994bf5b7d47a5286ee8793",
+    "actionId": "99958db135334050ab917bd1fc276e8c",
+    "promptRunId": "P17",
+    "evidencePacket": null,
+    "payload": {
+      "kind": "pr_comment_preview",
+      "title": "pr_comment_preview: POL-001 \u2014 Storage accounts should restrict public network access"
+    },
+    "createdAt": "2026-07-20T10:12:46.576371"
+  },
+  {
+    "eventId": "d5dc646fb07a4073a241489f9c0b4a14",
+    "violationId": "POL-001",
+    "eventType": "artifact.generated",
+    "correlationId": "99729104304e48f4a836904f0fbf5977",
+    "actionId": "8e022acb713d4563a8a1da6901225bcd",
+    "promptRunId": "P17",
+    "evidencePacket": null,
+    "payload": {
+      "kind": "ticket",
+      "title": "ticket: POL-001 \u2014 Storage accounts should restrict public network access"
+    },
+    "createdAt": "2026-07-20T10:12:46.581586"
+  },
+  {
+    "eventId": "b96337e2df374a9cab8261dfebdefa7f",
+    "violationId": "POL-001",
+    "eventType": "verification.completed",
+    "correlationId": "f9191c1741184d0c924b5a658e8a2b3c",
+    "actionId": "TICKET-8e022acb",
+    "promptRunId": "P17",
+    "evidencePacket": "local://evidence_packets/POL-001/verification.completed-20260720T101246689479.json",
+    "payload": {
+      "violationId": "POL-001",
+      "result": "Compliant",
+      "beforeState": {
+        "publicNetworkAccess": "Enabled",
+        "networkAcls.defaultAction": "Allow"
+      },
+      "afterState": {
+        "publicNetworkAccess": "Disabled",
+        "networkAcls.defaultAction": "Deny"
+      },
+      "verificationQuery": "resources | where id =~ '<resourceId>' | project publicNetworkAccess=properties.publicNetworkAccess, defaultAction=properties.networkAcls.defaultAction",
+      "expectedCompliantValue": "publicNetworkAccess == Disabled and networkAcls.defaultAction == Deny",
+      "details": [
+        "publicNetworkAccess: 'Disabled' matches expected 'Disabled'",
+        "networkAcls.defaultAction: 'Deny' matches expected 'Deny'"
+      ],
+      "ruleVersion": "verification-1.0.0"
+    },
+    "createdAt": "2026-07-20T10:12:46.690829"
+  },
+  {
+    "eventId": "a0ab095e3c4444c08a2a39e16c2382f1",
+    "violationId": "POL-001",
+    "eventType": "violation.closed",
+    "correlationId": "9cc7dbfab8fe4601a907222050f9cf5e",
+    "actionId": "TICKET-8e022acb",
+    "promptRunId": "P17",
+    "evidencePacket": "local://evidence_packets/POL-001/violation.closed-20260720T101246702819.json",
+    "payload": {
+      "violationId": "POL-001",
+      "result": "Compliant",
+      "beforeState": {
+        "publicNetworkAccess": "Enabled",
+        "networkAcls.defaultAction": "Allow"
+      },
+      "afterState": {
+        "publicNetworkAccess": "Disabled",
+        "networkAcls.defaultAction": "Deny"
+      },
+      "verificationQuery": "resources | where id =~ '<resourceId>' | project publicNetworkAccess=properties.publicNetworkAccess, defaultAction=properties.networkAcls.defaultAction",
+      "expectedCompliantValue": "publicNetworkAccess == Disabled and networkAcls.defaultAction == Deny",
+      "details": [
+        "POL-001 closed with after-state proof"
+      ],
+      "ruleVersion": "verification-1.0.0"
+    },
+    "createdAt": "2026-07-20T10:12:46.703181"
+  }
+]

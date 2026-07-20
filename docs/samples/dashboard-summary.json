@@ -1,0 +1,11 @@
+{
+  "totalFindings": 5,
+  "criticalFindings": 1,
+  "repeatViolations": 2,
+  "autoRemediable": 1,
+  "tickets": 2,
+  "prComments": 1,
+  "exceptions": 1,
+  "blockedUnsafeActions": 1,
+  "verifiedFixes": 1
+}

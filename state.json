@@ -2,7 +2,7 @@
   "project": "policy-compliance-drift-detection-agent",
   "schemaVersion": "1.0.0",
   "lastUpdatedAt": "2026-07-19T00:00:00+05:30",
-  "currentPromptId": "P17",
+  "currentPromptId": "P18",
   "currentStatus": "Implemented",
   "promptRuns": [
     {
@@ -717,6 +717,43 @@
         "No failing gates; gaps recorded as drawbacks"
       ],
       "nextTriggerPhrase": "START P18 DEMO VALIDATION"
+    },
+    {
+      "promptId": "P18",
+      "status": "Implemented",
+      "startedAt": "2026-07-20T00:00:00+05:30",
+      "finishedAt": "2026-07-20T00:00:00+05:30",
+      "implemented": [
+        "nine-step demo script with persona talking points and never-break rules",
+        "acceptance evidence matrix AC-1..AC-9 plus definition-of-done cross-check",
+        "directly ingestible demo seed with ordered demo actions",
+        "generated sample cards, audit trail, dashboard summary",
+        "two live UI screenshots via Chromium/Playwright"
+      ],
+      "created": [
+        "docs/DEMO_SCRIPT.md",
+        "docs/ACCEPTANCE_EVIDENCE.md",
+        "data/demo/demo_seed.json",
+        "docs/samples/ (10 files)"
+      ],
+      "changed": [
+        "IMPLEMENTATION_STATE.md",
+        "state.json"
+      ],
+      "result": "Live dashboard screenshot shows ranked worklist led by POL-001 Critical 100 with all metrics populated; seed ingests 5/5; suite 143/143 green",
+      "drawbacks": [
+        "Screenshots need regeneration after UI changes",
+        "Demo exercises the local stack; Azure-hosted variant documented only",
+        "Playwright installed ad hoc, not a project dependency"
+      ],
+      "validation": [
+        "Demo covers all acceptance criteria",
+        "Each persona sees a decision moment",
+        "No production auto-apply is shown",
+        "Blocked path is explicit",
+        "Verification proof is visible"
+      ],
+      "nextTriggerPhrase": "START P19 MISIMPLEMENTATION CHECK"
     }
   ]
 }

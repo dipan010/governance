@@ -1,9 +1,9 @@
 # Implementation State — Policy Compliance and Drift Detection Agent
 
-Current prompt: P17
+Current prompt: P18
 Current status: Implemented
 Last updated: 2026-07-20
-Next trigger phrase: `START P18 DEMO VALIDATION`
+Next trigger phrase: `START P19 MISIMPLEMENTATION CHECK`
 
 ---
 
@@ -424,3 +424,26 @@ Next trigger phrase: `START P18 DEMO VALIDATION`
   - [x] Security masking test passes (audit payloads, evidence packets, connector leak check)
   - [x] Failing gates: none; remaining gaps recorded as drawbacks
 - Next trigger phrase: `START P18 DEMO VALIDATION`
+
+## P18 — Demo validation and story
+
+- Status: Implemented
+- Implemented: docs/DEMO_SCRIPT.md covering the full nine-step runbook flow (worklist scoped to ABI TECHOPS CLOUD ENGG / ghq-3-squad3-cloudgov-dev-rg, raw vs agent-ranked, POL-001 hero card with score/source drift/PR+ticket/verification query, POL-003 dry-run after approval, POL-005 blocked unsafe action, verified after-state with audit packet, closing metrics) with per-persona talking points and the hard rules the demo never breaks; docs/ACCEPTANCE_EVIDENCE.md mapping AC-1..AC-9 to concrete evidence plus a definition-of-done cross-check against spec section 22; data/demo/demo_seed.json (directly ingestible — verified 5/5 — with the ordered demoActions plan); real generated samples in docs/samples/ (PR/comment preview, two tickets, dry-run plan, exception request, blocked card, POL-001 audit trail JSON, dashboard summary JSON) and two live UI screenshots captured with Chromium+Playwright against the running app (worklist with metrics/filters/blockers, POL-001 full finding card)
+- Created:
+  - docs/DEMO_SCRIPT.md
+  - docs/ACCEPTANCE_EVIDENCE.md
+  - data/demo/demo_seed.json
+  - docs/samples/ (10 files: 5 artifact cards, audit trail, dashboard summary, 2 screenshots)
+- Changed: IMPLEMENTATION_STATE.md, state.json
+- Result: Screenshot confirms the live dashboard: 5 findings, agent-ranked order led by POL-001 Critical 100 with POL-001 already Verified, POL-005 Blocked, all metrics populated (tickets 2, PR 1, exception 1, blocked 1, verified 1). Demo seed ingests cleanly (5/5). Full suite remains green (143/143). Every persona has a decision moment in the script; no production auto-apply appears anywhere in the flow; the blocked path and verification proof are explicit steps.
+- Drawbacks:
+  - Screenshots reflect this session's run; regenerate after UI changes (commands in DEMO_SCRIPT.md)
+  - The demo uses the local stack; the Azure-hosted variant (P16 infra) is documented but not exercised
+  - Playwright was installed ad hoc (--no-save) for screenshots and is not a project dependency
+- Validation:
+  - [x] Demo covers all acceptance criteria (mapped 1:1 in ACCEPTANCE_EVIDENCE.md)
+  - [x] Each persona sees a decision moment (Security Lead, IaC maintainer via source fix, Change Approver, Platform Owner, Auditor)
+  - [x] No production auto-apply is shown (drafts/previews/dry-run only; hard-rules section in script)
+  - [x] Blocked path is explicit (step 7: POL-005 with rule citation)
+  - [x] Verification proof is visible (step 8: before/after, proof-gated close, audit packet)
+- Next trigger phrase: `START P19 MISIMPLEMENTATION CHECK`
